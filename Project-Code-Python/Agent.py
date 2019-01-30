@@ -56,6 +56,11 @@ class Agent:
             object3 = problem.figures["C"].objects["c"]        
         except:
             return -1
+        
+        objectsA = problem.figures["A"].objects
+        objectsB = problem.figures["B"].objects
+        objectsC = problem.figures["C"].objects
+        #self.pairObjects(objectsA,objectsB)
 
         # Get relationships, hardcoded 2x2
         horizontal = self.compareAttributes(object1.attributes, object2.attributes)
@@ -89,6 +94,29 @@ class Agent:
                     return int(potential_answer.name)
 
         return -1
+
+    def pairObjects(self,objects1,objects2):
+        L = list()
+        for key in objects2.keys():
+            L.append(key)
+
+        #print(L)
+
+        pairs = set()
+        for key1 in objects1.keys():
+            min = 1000
+            minkey = None
+            for key2 in L:
+                #print(key2)
+                differences = self.compareAttributes(objects1[key1].attributes,objects2[key2].attributes)
+                if len(differences) < min:
+                    minkey = key2
+                    min = len(differences)
+                #print(key1,key2,min,minkey)
+            pairs.add((key1,minkey))
+            #print(key1,min,minkey,L)
+            L.remove(minkey)
+        return pairs
 
     # Output: dictionary of differences
     def compareAttributes(self,attributes1,attributes2):

@@ -32,6 +32,38 @@ class TestUM(unittest.TestCase):
 				self.problemDict[problem.name] = problem
 		#print("=================================")
 
+	def test_pairObjectsB2(self):
+		objectsA = self.problemDict["Basic Problem B-02"].figures["A"].objects
+		objectsB = self.problemDict["Basic Problem B-02"].figures["B"].objects
+		result = self.agent.pairObjects(objectsA,objectsB)
+		S = set()
+		S.add( ("a","c"))
+		S.add( ("b","d"))
+		self.assertEqual(result,S)
+
+		objectsC = self.problemDict["Basic Problem B-02"].figures["C"].objects
+		result2 = self.agent.pairObjects(objectsA,objectsC)
+		S2 = set()
+		S2.add( ("a","e"))
+		S2.add( ("b","f"))
+		self.assertEqual(result2,S2)
+
+	def test_pairObjectsB6(self):
+		objectsA = self.problemDict["Basic Problem B-06"].figures["A"].objects
+		objectsB = self.problemDict["Basic Problem B-06"].figures["B"].objects
+		result = self.agent.pairObjects(objectsA,objectsB)
+		S = set()
+		S.add( ("a","c"))
+		S.add( ("b","d"))
+		self.assertEqual(result,S)
+
+		objectsC = self.problemDict["Basic Problem B-06"].figures["C"].objects
+		result2 = self.agent.pairObjects(objectsA,objectsC)
+		S2 = set()
+		S2.add( ("a","e"))
+		S2.add( ("b","f"))
+		self.assertEqual(result2,S2)
+
 	def test_fillTransform(self):
 		#flip occurs
 		attributes = {}
@@ -197,7 +229,7 @@ class TestUM(unittest.TestCase):
 		transform = ("large","large")
 		result = self.agent.sizeTransform(attributes,transform)
 		self.assertTrue(result["size"],"medium")
-		
+
 	def test_agent_compareAttributes(self):
 		print("Validate agent's compareObjects method...")
 		print("Case where keys are the same...")
