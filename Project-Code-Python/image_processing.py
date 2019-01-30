@@ -69,8 +69,11 @@ def guessRelection(angles):
         return "horizontal"
     if (quadrant == 1 or quadrant == 3) and difference == 90:
         return "vertical"
-    if quadrant == 2 and difference == 90:
+    if (quadrant == 2 or quadrant == 4) and difference == 90:
         return "horizontal"
+    if (quadrant == 2 or quadrant == 4) and difference == -90:
+        return "vertical"
+
 
 def performReflection(current_angle,reflection_type):
     #print(current_angle,reflection_type)

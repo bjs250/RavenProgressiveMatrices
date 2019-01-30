@@ -13,7 +13,7 @@ def getNextLine(r):
 class TestUM(unittest.TestCase):
  
 	def setUp(self):
-		print("=====Setup===== \n")
+		#print("=====Setup===== \n")
 		self.Basic_B_Score = 0
 
 		# taken from RavensProject.py
@@ -30,36 +30,174 @@ class TestUM(unittest.TestCase):
 		for set in self.sets:
 			for problem in set.problems: 
 				self.problemDict[problem.name] = problem
-		print("=================================")
+		#print("=================================")
+
+	def test_fillTransform(self):
+		#flip occurs
+		attributes = {}
+		attributes["fill"] = "no"
+		transform = ("yes","no")
+		result = self.agent.fillTransform(attributes,transform)
+		self.assertTrue(result["fill"],"yes")
+
+		attributes = {}
+		attributes["fill"] = "yes"
+		transform = ("yes","no")
+		result = self.agent.fillTransform(attributes,transform)
+		self.assertTrue(result["fill"],"no")
+
+		attributes = {}
+		attributes["fill"] = "no"
+		transform = ("no","yes")
+		result = self.agent.fillTransform(attributes,transform)
+		self.assertTrue(result["fill"],"yes")
+
+		attributes = {}
+		attributes["fill"] = "yes"
+		transform = ("no","yes")
+		result = self.agent.fillTransform(attributes,transform)
+		self.assertTrue(result["fill"],"no")
+
+		#nothing should occur
+		attributes = {}
+		attributes["fill"] = "no"
+		transform = ("yes","yes")
+		result = self.agent.fillTransform(attributes,transform)
+		self.assertTrue(result["fill"],"no")
+
+		attributes = {}
+		attributes["fill"] = "no"
+		transform = ("no","no")
+		result = self.agent.fillTransform(attributes,transform)
+		self.assertTrue(result["fill"],"no")
+
+		attributes = {}
+		attributes["fill"] = "yes"
+		transform = ("no","no")
+		result = self.agent.fillTransform(attributes,transform)
+		self.assertTrue(result["fill"],"yes")
+
+		attributes = {}
+		attributes["fill"] = "yes"
+		transform = ("yes","yes")
+		result = self.agent.fillTransform(attributes,transform)
+		self.assertTrue(result["fill"],"yes")
 
 	def test_guessReflection(self):
-		angles = ("270","0") #B3
-		self.assertEqual(image_processing.guessRelection(angles),"vertical")
+		
+		# Quadrant 1 interior
 		angles = ("45","135") #B4
 		self.assertEqual(image_processing.guessRelection(angles),"vertical")
 		angles = ("45","315") #B4
 		self.assertEqual(image_processing.guessRelection(angles),"horizontal")
+
+		# Quadrant 2 interior
 		angles = ("135","225") #B4
 		self.assertEqual(image_processing.guessRelection(angles),"horizontal")
-		angles = ("270","180") #B5
+		angles = ("135","45") 
+		self.assertEqual(image_processing.guessRelection(angles),"vertical")
+
+		# Quadrant 3 interior
+		angles = ("225","135") 
 		self.assertEqual(image_processing.guessRelection(angles),"horizontal")
+		angles = ("225","315") 
+		self.assertEqual(image_processing.guessRelection(angles),"vertical")
+
+		# Quadrant 4 interior
+		angles = ("315","45") 
+		self.assertEqual(image_processing.guessRelection(angles),"horizontal")
+		angles = ("315","225") 
+		self.assertEqual(image_processing.guessRelection(angles),"vertical")
+
+		# Quadrant 1 corner
 		angles = ("90","180") #B6
 		self.assertEqual(image_processing.guessRelection(angles),"vertical")
-		
-	def test_checkReflection_horizontal(self):
-		print("Testing checkReflection horizontal...")
-		image = "Problems/Basic Problems B/Basic Problem B-04/A.png"
-		horizontal_reflection = "Problems/Basic Problems B/Basic Problem B-04/C.png"
-		result = image_processing.checkReflection(image,horizontal_reflection, "horizontal")
-		self.assertTrue(result)
-	
-	def test_checkReflection_vertical(self):
-		print("Testing checkReflection vertical...")
-		image = "Problems/Basic Problems B/Basic Problem B-04/A.png"
-		vertical_reflection = "Problems/Basic Problems B/Basic Problem B-04/B.png"
-		result = image_processing.checkReflection(image,vertical_reflection, "vertical")
-		self.assertTrue(result)	
+		angles = ("90","0") 
+		self.assertEqual(image_processing.guessRelection(angles),"horizontal")
 
+		# Quadrant 2 corner
+		angles = ("180","270") 
+		self.assertEqual(image_processing.guessRelection(angles),"horizontal")
+		angles = ("180","90") 
+		self.assertEqual(image_processing.guessRelection(angles),"vertical")
+
+		# Quadrant 3 corner
+		angles = ("270","0") #B3
+		self.assertEqual(image_processing.guessRelection(angles),"vertical")
+		angles = ("270","180") #B5
+		self.assertEqual(image_processing.guessRelection(angles),"horizontal")
+
+		# Quadrant 4 corner
+		angles = ("0","90") 
+		self.assertEqual(image_processing.guessRelection(angles),"horizontal")
+		angles = ("0","270") 
+		self.assertEqual(image_processing.guessRelection(angles),"vertical")
+
+	def test_alignment_transform(self):
+		# horizontal flip
+		attributes = {}
+		attributes["alignment"] = "bottom-right"
+		transform = ("top-left","top-right")
+		result = self.agent.alignmentTransform(attributes,transform)
+		self.assertTrue(result["alignment"],"bottom-left")
+
+		# symmetric horizontal flip
+		attributes = {}
+		attributes["alignment"] = "bottom-right"
+		transform = ("top-right","top-left")
+		result = self.agent.alignmentTransform(attributes,transform)
+		self.assertTrue(result["alignment"],"bottom-left")
+
+		# vertical flip
+		attributes = {}
+		attributes["alignment"] = "top-left"
+		transform = ("top-left","bottom-left")
+		result = self.agent.alignmentTransform(attributes,transform)
+		self.assertTrue(result["alignment"],"bottom-left")
+
+		# symmetric vertical flip
+		attributes = {}
+		attributes["alignment"] = "top-left"
+		transform = ("bottom-left","top-left")
+		result = self.agent.alignmentTransform(attributes,transform)
+		self.assertTrue(result["alignment"],"bottom-left")
+
+		#double
+		attributes = {}
+		attributes["alignment"] = "top-right"
+		transform = ("bottom-left","top-right")
+		result = self.agent.alignmentTransform(attributes,transform)
+		self.assertTrue(result["alignment"],"bottom-left")
+
+		#none
+		attributes = {}
+		attributes["alignment"] = "top-right"
+		transform = ("bottom-left","bottom-left")
+		result = self.agent.alignmentTransform(attributes,transform)
+		self.assertTrue(result["alignment"],"top-right")
+
+	def test_size_transform(self):
+		# increase
+		attributes = {}
+		attributes["size"] = "medium"
+		transform = ("small","large")
+		result = self.agent.sizeTransform(attributes,transform)
+		self.assertTrue(result["size"],"very-large")
+
+		# increase
+		attributes = {}
+		attributes["size"] = "medium"
+		transform = ("large","small")
+		result = self.agent.sizeTransform(attributes,transform)
+		self.assertTrue(result["size"],"very-small")
+
+		# none
+		attributes = {}
+		attributes["size"] = "medium"
+		transform = ("large","large")
+		result = self.agent.sizeTransform(attributes,transform)
+		self.assertTrue(result["size"],"medium")
+		
 	def test_agent_compareAttributes(self):
 		print("Validate agent's compareObjects method...")
 		print("Case where keys are the same...")
@@ -102,8 +240,17 @@ class TestUM(unittest.TestCase):
 		self.assertEqual(4,self.agent.Solve(problemB4))
 		self.Basic_B_Score += 1
 
+	def test_one_object_multiple_transform2(self):
+		problemB7 = self.problemDict["Basic Problem B-07"]
+		self.assertEqual(6, self.agent.Solve(problemB7))
+
+	def test_one_object_multiple_transform_3(self):
+		problemB9 = self.problemDict["Basic Problem B-09"]
+		self.assertEqual(5, self.agent.Solve(problemB9))
+
 	def tearDown(self):
-		print("=====Teardown=====")
+		pass
+		#print("=====Teardown=====")
 
 if __name__ == '__main__':
 	unittest.main()

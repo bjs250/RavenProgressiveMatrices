@@ -12,6 +12,15 @@
 from PIL import Image
 import numpy
 import image_processing
+from enum import Enum
+
+class Size(Enum):
+    very_small = 1
+    small = 2
+    medium = 3
+    large = 4
+    very_large = 5
+    huge = 6
 
 class Agent:
     # The default constructor for your Agent. Make sure to execute any
@@ -33,7 +42,8 @@ class Agent:
     # Returning your answer as a string may cause your program to crash.
     def Solve(self,problem):
         self.problem = problem
-        #print(problem.name)
+        debug = False
+        #self.print(debug,problem.name)
 
         #Segregate the Ravens figures into questions and answers based on letters vs numbers
         #question_figures = [problem.figures[key] for key in problem.figures.keys() if key.isalpha()]
@@ -52,30 +62,30 @@ class Agent:
         vertical = self.compareAttributes(object1.attributes, object3.attributes)
 
         #Get translational and diagonal answers, hardcoded 2x2
-        #print("original: ")
-        #print(object1.attributes)
+        #self.print(debug,"original: ")
+        #self.print(debug,object1.attributes)
 
-        #print("horizontal: ")
-        #print(horizontal)
+        #self.print(debug,"horizontal: ")
+        #self.print(debug,horizontal)
 
         intermediate_answer = self.performTransform(object1.attributes,horizontal)
-        #print("intermediate answer: ")
-        #print(intermediate_answer)
+        #self.print(debug,"intermediate answer: ")
+        #self.print(debug,intermediate_answer)
 
-        #print("vertical: ")
-        #print(vertical)
+        #self.print(debug,"vertical: ")
+        #self.print(debug,vertical)
 
         translational_answer = self.performTransform(intermediate_answer,vertical)
-        #print("translational answer: ")
-        #print(translational_answer)
+        #self.print(debug,"translational answer: ")
+        #self.print(debug,translational_answer)
         
         answer = translational_answer
         
         for potential_answer in answer_figures:
             for name, object in potential_answer.objects.items():
-                #print(potential_answer.name, object.attributes)
+                #self.print(debug,object.attributes)
                 if answer == object.attributes:
-                    #print("found answer: " + potential_answer.name + "\n")
+                    #self.print(debug,"found answer: " + potential_answer.name + "\n")
                     return int(potential_answer.name)
 
         return -1
@@ -106,7 +116,11 @@ class Agent:
         if "shape" in transform: # handle shape transform
             attributes_copy = self.stateTransform(attributes_copy,"shape",transform["shape"])    
         if "alignment" in transform: # handle alignment transform
-            attributes_copy = self.alignmentTransform(attributes_copy,transform["alignment"])    
+            attributes_copy = self.alignmentTransform(attributes_copy,transform["alignment"]) 
+        if "fill" in transform: # handle fill transform
+            attributes_copy = self.fillTransform(attributes_copy,transform["fill"]) 
+        if "size" in transform:
+            attributes_copy = self.sizeTransform(attributes_copy,transform["size"]) 
 
         return attributes_copy
 
@@ -150,5 +164,27 @@ class Agent:
             lr = current_alignment.split("-")[1]
         attributes_copy["alignment"] = ud+"-"+lr
         return attributes_copy
+
+    def fillTransform(self,attributes,transform):
+        attributes_copy = attributes.copy() #make sure no side effects in this method
+        current_fill = attributes["fill"]
+        if transform[0] != transform[1]:
+            if current_fill == "yes":
+                current_fill = "no"
+            elif current_fill == "no":
+                current_fill = "yes"
+        attributes_copy["fill"] = current_fill
+        return attributes_copy
+
+    def sizeTransform(self,attributes,transform):
+        attributes_copy = attributes.copy() #make sure no side effects in this method
+        current_size = attributes["size"]
+        difference = Size[transform[1]].value-Size[transform[0]].value
+        attributes_copy["size"] =  Size(Size[current_size].value+difference).name
+        return attributes_copy
+
+   # def print(self, debug, text):
+   #     if debug:
+   #         print(text)
 
 
