@@ -6,6 +6,8 @@ import csv
 from Agent import Agent
 from ProblemSet import ProblemSet
 import image_processing
+import numpy as np
+from RavensObject import RavensObject
 
 def getNextLine(r):
 	return r.readline().rstrip()
@@ -252,6 +254,19 @@ class TestUM(unittest.TestCase):
 		answer = {'angle': (None, '45'),'fill': ('no', 'yes'),'inside': ('b', None),'shape': ('circle', 'pac-man')} 
 		self.assertEqual(answer,self.agent.compareAttributes(object1.attributes,object2.attributes), msg="object 1 and 2 have same number of keys, but different values")
 
+		object1 = {"attributes" : {"shape": "circle", "fill":"yes"}}
+		object2 = {"attributes" : {}}
+		answer = {'shape': ('circle', None),'fill': ('yes', None)} 
+		self.assertEqual(answer,self.agent.compareAttributes(object1["attributes"],object2["attributes"]), msg="null")
+
+	def test_performTransform(self):
+		print("Testing performTransform")
+		problem = self.problemDict["Basic Problem B-10"]
+		object1 = problem.figures["A"].objects["a"]
+		object2 = problem.figures["B"].objects["c"]
+		transform = self.agent.compareAttributes(object1.attributes,object2.attributes)
+
+
 	def test_identity_transform(self):
 		problemB1 = self.problemDict["Basic Problem B-01"]
 		self.assertEqual(2,self.agent.Solve(problemB1), msg="No change to Figure A")
@@ -280,9 +295,248 @@ class TestUM(unittest.TestCase):
 		problemB9 = self.problemDict["Basic Problem B-09"]
 		self.assertEqual(5, self.agent.Solve(problemB9))
 
+	def test_two_objects_identity_transform(self):
+		problemB2 = self.problemDict["Basic Problem B-02"]
+		self.assertEqual(5, self.agent.Solve(problemB2))
+
+	def test_two_objects_interdependent_transform(self):
+		problemB6 = self.problemDict["Basic Problem B-06"]
+		self.assertEqual(5, self.agent.Solve(problemB6))
+
+	def test_two_objects_interdependent_transform2(self):
+		problemB11 = self.problemDict["Basic Problem B-11"]
+		self.assertEqual(1, self.agent.Solve(problemB11))
+
+	def test_two_objects_interdependent_transform3(self):
+		problemB10 = self.problemDict["Basic Problem B-10"]
+		self.assertEqual(3, self.agent.Solve(problemB10))
+
+	def test_two_objects_interdependent_transform4(self):
+		problemB12 = self.problemDict["Basic Problem B-12"]
+		self.assertEqual(1, self.agent.Solve(problemB12))
+
+	def test_pairObjectsAlt(self):
+		print("test pairObjectsAlt")
+		objects1 = {}
+		objects1["a"] = RavensObject("a")
+		objects1["a"].attributes = {"shape" : "circle", "fill" : "no"}
+		objects1["b"] = RavensObject("b")
+		objects1["b"].attributes = {"shape" : "square", "fill" : "no"}
+		objects2 = {}
+		objects2["c"] = RavensObject("c")
+		objects2["c"].attributes = {"shape" : "circle", "fill" : "no"}
+		objects2["d"] = RavensObject("d")
+		objects2["d"].attributes = {"shape" : "square", "fill" : "yes"}
+		pairs = self.agent.pairObjectsAlt(objects1,objects2)
+		result = set()
+		for pair in pairs:
+			if pair[0] is not None:
+				str1 = pair[0].name
+			else:
+				str1 = None
+			if pair[1] is not None:
+				str2 = pair[1].name
+			else:
+				str2 = None
+			result.add((str1,str2))
+		answer = set()
+		answer.add(("a","c"))
+		answer.add(("b","d"))
+		self.assertEqual(result,answer,msg="Case:same number of objects")
+
+		objects1 = {}
+		objects1["a"] = RavensObject("a")
+		objects1["a"].attributes = {"shape" : "circle", "fill" : "no"}
+		objects1["b"] = RavensObject("b")
+		objects1["b"].attributes = {"shape" : "square", "fill" : "no"}
+		objects2 = {}
+		objects2["c"] = RavensObject("c")
+		objects2["c"].attributes = {"shape" : "circle", "fill" : "no"}
+		pairs = self.agent.pairObjectsAlt(objects1,objects2)
+		result = set()
+		for pair in pairs:
+			if pair[0] is not None:
+				str1 = pair[0].name
+			else:
+				str1 = None
+			if pair[1] is not None:
+				str2 = pair[1].name
+			else:
+				str2 = None
+			result.add((str1,str2))
+		answer = set()
+		answer.add(("a","c"))
+		answer.add(("b",None))
+		self.assertEqual(result,answer,msg="Case:lost objects")
+
+		objects1 = {}
+		objects1["a"] = RavensObject("a")
+		objects1["a"].attributes = {"shape" : "circle", "fill" : "no"}
+		objects2 = {}
+		objects2["c"] = RavensObject("c")
+		objects2["c"].attributes = {"shape" : "circle", "fill" : "no"}
+		objects2["d"] = RavensObject("d")
+		objects2["d"].attributes = {"shape" : "square", "fill" : "no"}
+		pairs = self.agent.pairObjectsAlt(objects1,objects2)
+		result = set()
+		for pair in pairs:
+			if pair[0] is not None:
+				str1 = pair[0].name
+			else:
+				str1 = None
+			if pair[1] is not None:
+				str2 = pair[1].name
+			else:
+				str2 = None
+			result.add((str1,str2))
+		answer = set()
+		answer.add(("a","c"))
+		answer.add((None,"d"))
+		self.assertEqual(result,answer,msg="Case:gain objects")
+
+		objects1 = {}
+		objects1["a"] = RavensObject("a")
+		objects1["a"].attributes = {"shape" : "square", "fill" : "no"}
+		objects1["b"] = RavensObject("b")
+		objects1["b"].attributes = {"shape" : "circle", "fill" : "no"}
+		
+		"""
+		objects2 = {}
+		objects2["c"] = RavensObject("c")
+		objects2["c"].attributes = {"shape" : "triangle", "fill" : "no"}
+		objects2["d"] = RavensObject("d")
+		objects2["d"].attributes = {"shape" : "circle", "fill" : "yes"}
+		pairs = self.agent.pairObjectsAlt(objects1,objects2)
+		result = set()
+		for pair in pairs:
+			if pair[0] is not None:
+				str1 = pair[0].name
+			else:
+				str1 = None
+			if pair[1] is not None:
+				str2 = pair[1].name
+			else:
+				str2 = None
+			result.add((str1,str2))
+		answer = set()
+		answer.add(("a","c"))
+		answer.add(("b","d"))
+		self.assertEqual(result,answer,msg="Case:local tie")
+		"""
+
+	def test_pairObjectsAltB10(self):
+		print("Testing object pairing on Problem B10")
+		problemB10 = self.problemDict["Basic Problem B-10"]
+		objectsA = problemB10.figures["A"].objects
+		objectsB = problemB10.figures["B"].objects
+		pairs = self.agent.pairObjectsAlt(objectsA,objectsB)
+		result = set()
+		for pair in pairs:
+			if pair[0] is not None:
+				str1 = pair[0].name
+			else:
+				str1 = None
+			if pair[1] is not None:
+				str2 = pair[1].name
+			else:
+				str2 = None
+			result.add((str1,str2))
+		answer = set()
+		answer.add(("a","c"))
+		answer.add(("b","d"))
+		self.assertEqual(result,answer,msg="Case:horizontal")		
+
+		objectsC = problemB10.figures["C"].objects
+		pairs = self.agent.pairObjectsAlt(objectsA,objectsC)
+		result = set()
+		for pair in pairs:
+			if pair[0] is not None:
+				str1 = pair[0].name
+			else:
+				str1 = None
+			if pair[1] is not None:
+				str2 = pair[1].name
+			else:
+				str2 = None
+			result.add((str1,str2))
+		answer = set()
+		answer.add(("a","e"))
+		answer.add(("b","f"))
+		answer.add((None,"s"))
+		self.assertEqual(result,answer,msg="Case:vertical")		
+
+	def test_pairObjectsAltB11(self):
+		print("Testing object pairing on Problem B11")
+		problem = self.problemDict["Basic Problem B-11"]
+		objectsA = problem.figures["A"].objects
+		objectsB = problem.figures["B"].objects
+		pairs = self.agent.pairObjectsAlt(objectsA,objectsB)
+		result = set()
+		for pair in pairs:
+			if pair[0] is not None:
+				str1 = pair[0].name
+			else:
+				str1 = None
+			if pair[1] is not None:
+				str2 = pair[1].name
+			else:
+				str2 = None
+			result.add((str1,str2))
+		answer = set()
+		answer.add(("a","c"))
+		answer.add(("b",None))
+		self.assertEqual(result,answer,msg="Case:horizontal")		
+
+		objectsC = problem.figures["C"].objects
+		pairs = self.agent.pairObjectsAlt(objectsA,objectsC)
+		result = set()
+		for pair in pairs:
+			if pair[0] is not None:
+				str1 = pair[0].name
+			else:
+				str1 = None
+			if pair[1] is not None:
+				str2 = pair[1].name
+			else:
+				str2 = None
+			result.add((str1,str2))
+		answer = set()
+		answer.add(("a","e"))
+		answer.add(("b","f"))
+		self.assertEqual(result,answer,msg="Case:vertical")		
+
+	def test_pairObjectsAltB12(self):
+		print("Testing object pairing on Problem B12")
+		problem = self.problemDict["Basic Problem B-12"]
+		objectsA = problem.figures["A"].objects
+		objectsB = problem.figures["B"].objects
+		pairs = self.agent.pairObjectsAlt(objectsA,objectsB)
+		result = set()
+		for pair in pairs:
+			if pair[0] is not None:
+				str1 = pair[0].name
+			else:
+				str1 = None
+			if pair[1] is not None:
+				str2 = pair[1].name
+			else:
+				str2 = None
+			result.add((str1,str2))
+		answer = set()
+		answer.add(("a",None))
+		answer.add(("b",None))
+		answer.add(("c","f"))
+		answer.add(("d","g"))
+		answer.add(("e","h"))
+
+		self.assertEqual(result,answer,msg="Case:horizontal")		
+
+	
+
 	def tearDown(self):
 		pass
 		#print("=====Teardown=====")
+
 
 if __name__ == '__main__':
 	unittest.main()
