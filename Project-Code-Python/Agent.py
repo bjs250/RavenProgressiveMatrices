@@ -34,25 +34,24 @@ class Agent:
 	# Make sure to return your answer *as an integer* at the end of Solve().
 	# Returning your answer as a string may cause your program to crash.
 	def Solve(self,problem):
+		# Setup
 		self.problem = problem
 		dummycount = 0
 		debug = False
-		#print(problem.name)
+		self.log(debug, "Problem name", problem.name)
 
 		# Get objects, hardcoded 2x2, single object per figure
-		horizontal_pairs = self.pairObjectsAlt(problem.figures["A"].objects,problem.figures["B"].objects)
-		vertical_pairs = self.pairObjectsAlt(problem.figures["A"].objects,problem.figures["C"].objects)
+		horizontal_pairs = self.pairObjects(problem.figures["A"].objects,problem.figures["B"].objects)
+		vertical_pairs = self.pairObjects(problem.figures["A"].objects,problem.figures["C"].objects)
 		
-		#print("pairs:")
-		#print("h:", horizontal_pairs)
-		#print("v:", vertical_pairs)
-		
-		original = copy.deepcopy(problem.figures["A"].objects) #objects dictionary
+		# Objects dictionary from Figure A
+		original = copy.deepcopy(problem.figures["A"].objects)
 		del_list = []
 
 		# Get relationships and transform, hardcoded 2x2
 		for pair in horizontal_pairs:
-			#print(self.pairToString(pair))
+			self.log(debug,"pair",self.pairToString(pair))
+
 			# get transform
 			if pair[1] is None:
 				del_list.append(pair[0].name)
@@ -64,7 +63,7 @@ class Agent:
 				if horizontal["inside"] in horizontal_pairs:
 					del horizontal["inside"]
 
-			# Perform transform carefilly
+			# Perform transform carefully
 			if pair[0] is not None:
 				result = self.performTransform(original[pair[0].name].attributes,horizontal)
 				original[pair[0].name].attributes = result
@@ -77,10 +76,12 @@ class Agent:
 				dummycount +=1
 			
 		for pair in vertical_pairs:
-			#print(self.pairToString(pair))
+			self.log(debug,"pair",self.pairToString(pair))
+
 			if pair[1] is None:
 				del_list.append(pair[0].name)
 				continue
+
 			# get transform
 			vertical = self.getFunction(pair[0], pair[1])
 			
@@ -102,11 +103,8 @@ class Agent:
 				dummycount +=1
 		
 		for element in del_list:
-			#print("del",element)
+			self.log(debug,"del",element)
 			del original[element]
-
-		
-		#print("og",original)
 		
 		# Compare prediction to answers
 		answer_figures = [problem.figures[key] for key in problem.figures.keys() if key.isalpha() == False]
@@ -114,7 +112,7 @@ class Agent:
 		best = 1000
 		answer = -1
 		for answer_figure in answer_figures:
-			pairs = self.pairObjectsAlt(original,answer_figure.objects)
+			pairs = self.pairObjects(original,answer_figure.objects)
 			sum = 0
 			for pair in pairs:
 				if pair[0] is not None:
@@ -131,7 +129,6 @@ class Agent:
 					attr2 = {}
 				differences = self.compareAttributes(attr1, attr2)
 				sum += len(differences)
-			#print(answer_figure.name,str1,str2)
 			if sum < best:
 				answer = answer_figure.name
 				best = sum
@@ -139,36 +136,6 @@ class Agent:
 			self.log(debug,"End of main:","True answer never found")
 
 		return int(answer)
-
-	def pairObjects(self,objects1,objects2):
-
-		L = list()
-		for key in objects2.keys():
-			L.append(key)
-
-		#print("pairObjects",len(objects1.keys()),len(objects2.keys()))
-
-		pairs = set()
-		for key1 in objects1.keys():
-			if len(L) == 0:
-				#print("odd man out")
-				continue
-			min = 1000
-			minkey = None
-			for key2 in L:
-				differences = self.compareAttributes(objects1[key1].attributes,objects2[key2].attributes)
-				difference_count = len(differences)
-				if "above" in differences:
-					if differences["above"][0] != None and differences["above"][1] != None:
-						difference_count -= 1
-				if difference_count < min:
-					minkey = key2
-					min = len(differences)
-				#print(differences,difference_count)
-			pairs.add((key1,minkey))
-			#print(key1,min,minkey,L)
-			L.remove(minkey)
-		return pairs
 
 	# Output: dictionary of differences
 	def compareAttributes(self,attributes1,attributes2):
@@ -196,30 +163,7 @@ class Agent:
 
 	# Input: A set of attributes and a tranform (usually from figure A) and the differences dict
 	def performTransform(self,attributes,transform):
-		#print("attributes",attributes)
-		#print("transform",transform)
 		
-		attributes_copy = attributes.copy() #make sure no side effects in this method
-		if transform == {}: # handle identity transform
-			return attributes_copy
-		if "angle" in transform and "angle" in attributes: # handle angle transform
-			if transform["angle"][1] is None:
-				del attributes_copy["angle"]
-			else:
-				attributes_copy = self.angleTransform(attributes_copy,transform["angle"])
-		if "shape" in transform: # handle shape transform
-			attributes_copy = self.stateTransform(attributes_copy,"shape",transform["shape"])    
-		if "alignment" in transform: # handle alignment transform
-			attributes_copy = self.alignmentTransform(attributes_copy,transform["alignment"]) 
-		if "fill" in transform: # handle fill transform
-			attributes_copy = self.fillTransform(attributes_copy,transform["fill"]) 
-		if "size" in transform:
-			attributes_copy = self.sizeTransform(attributes_copy,transform["size"]) 
-
-		return attributes_copy
-
-	def performTransformAlt(self,object,transform):
-		attributes = object.attributes
 		attributes_copy = attributes.copy() #make sure no side effects in this method
 		if transform == {}: # handle identity transform
 			return attributes_copy
@@ -293,8 +237,6 @@ class Agent:
 		return attributes_copy
 
 	def sizeTransform(self,attributes,transform):
-		#print("attributes",attributes)
-		#print("transform",transform)
 		attributes_copy = attributes.copy() #make sure no side effects in this method
 		d = {}
 		d["very small"] = 1
@@ -325,7 +267,7 @@ class Agent:
 		if debug:
 			print(header,text)
 
-	def pairObjectsAlt(self,objects1,objects2):
+	def pairObjects(self,objects1,objects2):
 		objs1 = [(key,value) for key,value in objects1.items()]
 		objs2 = [(key,value) for key,value in objects2.items()]
 		
@@ -344,8 +286,6 @@ class Agent:
 		pairMatrix = np.zeros((rows,cols))
 		pairs = set()
 
-		#print("=====")
-
 		#Generate the pairing matrix
 		for r in range(rows):
 			for c in range(cols):
@@ -354,22 +294,11 @@ class Agent:
 				diffCount = len(diff)
 				if "inside" in diff:
 					diffCount -= 1
-					#count1 = 0
-					#count2 = 0
-					#if diff["inside"][0] is not None:
-					#	count1 = len(diff["inside"][0].split(","))
-					#if diff["inside"][1] is not None:
-					#	count2 = len(diff["inside"][1].split(","))
-					#diffCount += abs(count2-count1)
 				pairMatrix[r,c] = diffCount
 				
-		#print("Generate:\n",pairMatrix, pairMatrix.shape)
-
 		# Systematically pair objects by the global min
 		while pairMatrix.shape != (0,0):
 			min = np.unravel_index(pairMatrix.argmin(),pairMatrix.shape)
-			#print(objs1)
-			#print(objs2)
 			obj1_name = objs1[min[0]][0]
 			obj2_name = objs2[min[1]][0]
 			if obj1_name is not None:
@@ -381,7 +310,6 @@ class Agent:
 			else:
 				obj2 = None
 			pairs.add((obj1,obj2))
-			#print(pairMatrix,min,pairs)
 			pairMatrix = np.delete(pairMatrix,(min[0]),axis=0)
 			pairMatrix = np.delete(pairMatrix,(min[1]),axis=1)
 			del objs1[min[0]]
@@ -389,6 +317,7 @@ class Agent:
 			
 		return pairs
 
+	# Given a tuple of Ravens Objects, return a string tuple of their names
 	def pairToString(self,pair):
 		if pair[0] is not None:
 			str1 = pair[0].name

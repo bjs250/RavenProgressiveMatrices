@@ -34,6 +34,8 @@ class TestUM(unittest.TestCase):
 				self.problemDict[problem.name] = problem
 		#print("=================================")
 
+
+	"""
 	def test_pairObjectsB2(self):
 		objectsA = self.problemDict["Basic Problem B-02"].figures["A"].objects
 		objectsB = self.problemDict["Basic Problem B-02"].figures["B"].objects
@@ -65,6 +67,7 @@ class TestUM(unittest.TestCase):
 		S2.add( ("a","e"))
 		S2.add( ("b","f"))
 		self.assertEqual(result2,S2)
+	"""
 
 	def test_fillTransform(self):
 		#flip occurs
@@ -315,8 +318,8 @@ class TestUM(unittest.TestCase):
 		problemB12 = self.problemDict["Basic Problem B-12"]
 		self.assertEqual(1, self.agent.Solve(problemB12))
 
-	def test_pairObjectsAlt(self):
-		print("test pairObjectsAlt")
+	def test_pairObjects(self):
+		print("test pairObjects")
 		objects1 = {}
 		objects1["a"] = RavensObject("a")
 		objects1["a"].attributes = {"shape" : "circle", "fill" : "no"}
@@ -327,7 +330,7 @@ class TestUM(unittest.TestCase):
 		objects2["c"].attributes = {"shape" : "circle", "fill" : "no"}
 		objects2["d"] = RavensObject("d")
 		objects2["d"].attributes = {"shape" : "square", "fill" : "yes"}
-		pairs = self.agent.pairObjectsAlt(objects1,objects2)
+		pairs = self.agent.pairObjects(objects1,objects2)
 		result = set()
 		for pair in pairs:
 			if pair[0] is not None:
@@ -352,7 +355,7 @@ class TestUM(unittest.TestCase):
 		objects2 = {}
 		objects2["c"] = RavensObject("c")
 		objects2["c"].attributes = {"shape" : "circle", "fill" : "no"}
-		pairs = self.agent.pairObjectsAlt(objects1,objects2)
+		pairs = self.agent.pairObjects(objects1,objects2)
 		result = set()
 		for pair in pairs:
 			if pair[0] is not None:
@@ -377,7 +380,7 @@ class TestUM(unittest.TestCase):
 		objects2["c"].attributes = {"shape" : "circle", "fill" : "no"}
 		objects2["d"] = RavensObject("d")
 		objects2["d"].attributes = {"shape" : "square", "fill" : "no"}
-		pairs = self.agent.pairObjectsAlt(objects1,objects2)
+		pairs = self.agent.pairObjects(objects1,objects2)
 		result = set()
 		for pair in pairs:
 			if pair[0] is not None:
@@ -406,7 +409,7 @@ class TestUM(unittest.TestCase):
 		objects2["c"].attributes = {"shape" : "triangle", "fill" : "no"}
 		objects2["d"] = RavensObject("d")
 		objects2["d"].attributes = {"shape" : "circle", "fill" : "yes"}
-		pairs = self.agent.pairObjectsAlt(objects1,objects2)
+		pairs = self.agent.pairObjects(objects1,objects2)
 		result = set()
 		for pair in pairs:
 			if pair[0] is not None:
@@ -424,12 +427,12 @@ class TestUM(unittest.TestCase):
 		self.assertEqual(result,answer,msg="Case:local tie")
 		"""
 
-	def test_pairObjectsAltB10(self):
+	def test_pairObjectsB10(self):
 		print("Testing object pairing on Problem B10")
 		problemB10 = self.problemDict["Basic Problem B-10"]
 		objectsA = problemB10.figures["A"].objects
 		objectsB = problemB10.figures["B"].objects
-		pairs = self.agent.pairObjectsAlt(objectsA,objectsB)
+		pairs = self.agent.pairObjects(objectsA,objectsB)
 		result = set()
 		for pair in pairs:
 			if pair[0] is not None:
@@ -447,7 +450,7 @@ class TestUM(unittest.TestCase):
 		self.assertEqual(result,answer,msg="Case:horizontal")		
 
 		objectsC = problemB10.figures["C"].objects
-		pairs = self.agent.pairObjectsAlt(objectsA,objectsC)
+		pairs = self.agent.pairObjects(objectsA,objectsC)
 		result = set()
 		for pair in pairs:
 			if pair[0] is not None:
@@ -465,12 +468,12 @@ class TestUM(unittest.TestCase):
 		answer.add((None,"s"))
 		self.assertEqual(result,answer,msg="Case:vertical")		
 
-	def test_pairObjectsAltB11(self):
+	def test_pairObjectsB11(self):
 		print("Testing object pairing on Problem B11")
 		problem = self.problemDict["Basic Problem B-11"]
 		objectsA = problem.figures["A"].objects
 		objectsB = problem.figures["B"].objects
-		pairs = self.agent.pairObjectsAlt(objectsA,objectsB)
+		pairs = self.agent.pairObjects(objectsA,objectsB)
 		result = set()
 		for pair in pairs:
 			if pair[0] is not None:
@@ -488,7 +491,7 @@ class TestUM(unittest.TestCase):
 		self.assertEqual(result,answer,msg="Case:horizontal")		
 
 		objectsC = problem.figures["C"].objects
-		pairs = self.agent.pairObjectsAlt(objectsA,objectsC)
+		pairs = self.agent.pairObjects(objectsA,objectsC)
 		result = set()
 		for pair in pairs:
 			if pair[0] is not None:
@@ -505,12 +508,12 @@ class TestUM(unittest.TestCase):
 		answer.add(("b","f"))
 		self.assertEqual(result,answer,msg="Case:vertical")		
 
-	def test_pairObjectsAltB12(self):
+	def test_pairObjectsB12(self):
 		print("Testing object pairing on Problem B12")
 		problem = self.problemDict["Basic Problem B-12"]
 		objectsA = problem.figures["A"].objects
 		objectsB = problem.figures["B"].objects
-		pairs = self.agent.pairObjectsAlt(objectsA,objectsB)
+		pairs = self.agent.pairObjects(objectsA,objectsB)
 		result = set()
 		for pair in pairs:
 			if pair[0] is not None:
