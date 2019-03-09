@@ -34,41 +34,7 @@ class TestUM(unittest.TestCase):
 				self.problemDict[problem.name] = problem
 		#print("=================================")
 
-
-	"""
-	def test_pairObjectsB2(self):
-		objectsA = self.problemDict["Basic Problem B-02"].figures["A"].objects
-		objectsB = self.problemDict["Basic Problem B-02"].figures["B"].objects
-		result = self.agent.pairObjects(objectsA,objectsB)
-		S = set()
-		S.add( ("a","c"))
-		S.add( ("b","d"))
-		self.assertEqual(result,S)
-
-		objectsC = self.problemDict["Basic Problem B-02"].figures["C"].objects
-		result2 = self.agent.pairObjects(objectsA,objectsC)
-		S2 = set()
-		S2.add( ("a","e"))
-		S2.add( ("b","f"))
-		self.assertEqual(result2,S2)
-
-	def test_pairObjectsB6(self):
-		objectsA = self.problemDict["Basic Problem B-06"].figures["A"].objects
-		objectsB = self.problemDict["Basic Problem B-06"].figures["B"].objects
-		result = self.agent.pairObjects(objectsA,objectsB)
-		S = set()
-		S.add( ("a","c"))
-		S.add( ("b","d"))
-		self.assertEqual(result,S)
-
-		objectsC = self.problemDict["Basic Problem B-06"].figures["C"].objects
-		result2 = self.agent.pairObjects(objectsA,objectsC)
-		S2 = set()
-		S2.add( ("a","e"))
-		S2.add( ("b","f"))
-		self.assertEqual(result2,S2)
-	"""
-
+	
 	def test_fillTransform(self):
 		#flip occurs
 		attributes = {}
@@ -120,6 +86,7 @@ class TestUM(unittest.TestCase):
 		result = self.agent.fillTransform(attributes,transform)
 		self.assertTrue(result["fill"],"yes")
 
+	"""
 	def test_guessReflection(self):
 		
 		# Quadrant 1 interior
@@ -169,6 +136,7 @@ class TestUM(unittest.TestCase):
 		self.assertEqual(image_processing.guessRelection(angles),"horizontal")
 		angles = ("0","270") 
 		self.assertEqual(image_processing.guessRelection(angles),"vertical")
+	"""
 
 	def test_alignment_transform(self):
 		# horizontal flip
@@ -273,23 +241,19 @@ class TestUM(unittest.TestCase):
 	def test_identity_transform(self):
 		problemB1 = self.problemDict["Basic Problem B-01"]
 		self.assertEqual(2,self.agent.Solve(problemB1), msg="No change to Figure A")
-		self.Basic_B_Score += 1
 		
 	def test_angle_transform(self):
 		problemB3 = self.problemDict["Basic Problem B-03"]
 		self.assertEqual(1,self.agent.Solve(problemB3), msg="90 degree clockwise rotation of Figure A")      
-		self.Basic_B_Score += 1
-
+		
 	def test_diagonal_relationship(self):
 		problemB4 = self.problemDict["Basic Problem B-04"]
 		self.assertEqual(3,self.agent.Solve(problemB4))
-		self.Basic_B_Score += 1
-
+		
 	def test_one_object_multiple_transform(self):
 		problemB4 = self.problemDict["Basic Problem B-05"]
 		self.assertEqual(4,self.agent.Solve(problemB4))
-		self.Basic_B_Score += 1
-
+		
 	def test_one_object_multiple_transform2(self):
 		problemB7 = self.problemDict["Basic Problem B-07"]
 		self.assertEqual(6, self.agent.Solve(problemB7))
@@ -534,7 +498,13 @@ class TestUM(unittest.TestCase):
 
 		self.assertEqual(result,answer,msg="Case:horizontal")		
 
-	
+	def testIdentity(self):
+		print("Testing image identity transform")
+		problem = self.problemDict["Basic Problem B-01"]
+		imageFileNameA = problem.figures["A"].visualFilename
+		imageFileNameB = problem.figures["B"].visualFilename
+		result = image_processing.checkIdentity(imageFileNameA,imageFileNameB)
+		self.assertTrue(result,True)
 
 	def tearDown(self):
 		pass

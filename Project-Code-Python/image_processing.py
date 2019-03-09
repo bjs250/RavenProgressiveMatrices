@@ -6,17 +6,48 @@ from PIL import Image
 import numpy as np
 from matplotlib import pyplot as plt
 
-# stolen
-def load_image( infilename ) :
-    img = Image.open( infilename )
-    img.load()
-    data = np.asarray( img, dtype="int32" )
-    return data
+def load_image(infilename) :
+    x = Image.open(infilename,"r")
+    x = x.convert('L')
+    y = np.asarray(x.getdata(),dtype=np.float64).reshape((x.size[1],x.size[0]))
+    y = np.asarray(y,dtype=np.uint16)
+    return y
 
 # stolen
 def save_image( npdata, outfilename ) :
     img = Image.fromarray( np.asarray( np.clip(npdata,0,255), dtype="uint32"), "L" )
     img.save( outfilename )
+
+def checkIdentity(inputFilename, outputFilename):
+    inputImage = load_image(inputFilename)
+    outputImage = load_image(outputFilename)
+    dim = inputImage.shape[0] * inputImage.shape[1]
+    sum = inputImage + outputImage
+    both_black = np.count_nonzero(sum == 510)
+    both_white = np.count_nonzero(sum == 0)
+    AandB = both_black + both_white
+
+    diffAB = inputImage - outputImage
+    AnotB = np.count_nonzero(diffAB != 0)
+    diffBA = outputImage - inputImage
+    BnotA = np.count_nonzero(diffBA != 0)
+
+    alpha = 0.5
+    beta = 0.5
+    Tversky = AandB / (AandB + alpha * AnotB + beta * BnotA)
+    print(AandB,AnotB,BnotA,dim,Tversky)
+
+    closeness = np.abs(Tversky-1.0)
+    print(closeness)
+    if closeness < .05:
+        return True
+    else:
+        return False
+
+
+
+
+
 
 def checkReflection(image1_filename, image2_filename, axis):
     tolerance = 100000  
