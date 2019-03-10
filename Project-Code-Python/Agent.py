@@ -40,7 +40,7 @@ class Agent:
 		debug = False
 		self.log(True, "Problem name", problem.name)
 
-		if "B-" in problem.name:
+		if problem.problemType == "2x2":
 			# Get objects, hardcoded 2x2, single object per figure
 			horizontal_pairs = self.pairObjects(problem.figures["A"].objects,problem.figures["B"].objects)
 			vertical_pairs = self.pairObjects(problem.figures["A"].objects,problem.figures["C"].objects)
@@ -209,6 +209,41 @@ class Agent:
 			# Compare prediction to answers
 			answer_figures = [problem.figures[key] for key in problem.figures.keys() if key.isalpha() == False]
 			
+			# Execute smart tester
+			check = image_processing.checkRotation(problem.figures["G"].visualFilename,problem.figures["C"].visualFilename,90)
+			selfcheck = image_processing.checkRotation(problem.figures["G"].visualFilename,problem.figures["G"].visualFilename,90)
+			if check and not selfcheck:
+				
+				passed = list()
+				
+				# Do the rotation check
+				for answer_figure in answer_figures:
+					result = image_processing.checkRotation(answer_figure.visualFilename,answer_figure.visualFilename,90)
+					print(answer_figure.name,result)
+					if result == True:
+						passed.append(answer_figure)
+
+				# Check if answer already appears
+				final_passed = list()
+				question_figures = [problem.figures[key] for key in problem.figures.keys() if key.isalpha() == True]
+				for index,answer_figure in enumerate(passed):
+					falseCount = 0
+					for question_figure in question_figures:
+						result = image_processing.checkIdentity(answer_figure.visualFilename,question_figure.visualFilename)
+						print(question_figure.name,answer_figure.name,result, falseCount)
+						if result == False:
+							falseCount += 1
+							if falseCount == 8:
+								final_passed.append(answer_figure)
+				
+				answer_figures = final_passed
+
+			print("remaining answers:")
+
+			for answer_figure in answer_figures:
+				print(answer_figure.name)
+
+		
 			best = 1000
 			answer = -1
 			for answer_figure in answer_figures:

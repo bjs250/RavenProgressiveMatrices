@@ -15,7 +15,7 @@ def load_image_from_filename(infilename):
 
 def image_to_array(x):
     y = np.asarray(x.getdata(),dtype=np.float64).reshape((x.size[1],x.size[0]))
-    y = np.asarray(y,dtype=np.uint16)
+    y = np.asarray(y,dtype=np.uint16)       
     return y
 
 def save_image( npdata, outfilename ) :
@@ -37,7 +37,7 @@ def computeTversky(imageA,imageB):
     alpha = 0.5
     beta = 0.5
     Tversky = AandB / (AandB + alpha * AnotB + beta * BnotA)
-    print(AandB,AnotB,BnotA,Tversky)
+    #print(AandB,AnotB,BnotA,Tversky)
 
     return Tversky
     
@@ -48,7 +48,7 @@ def checkIdentity(inputFilename, outputFilename):
     Tversky = computeTversky(inputImage,outputImage)
 
     closeness = np.abs(Tversky-1.0)
-    print(closeness)
+    #print(closeness)
 
     if closeness < .05:
         return True
@@ -56,8 +56,14 @@ def checkIdentity(inputFilename, outputFilename):
         return False
 
 def checkRotation(inputFilename,outputFilename,angle):
-    im = Image.open(inputFilename)
-    im = im.rotate(angle,fillcolor='white')
+    orig_im = Image.open(inputFilename)
+    
+    im2 = orig_im.convert('RGBA')
+    rot = im2.rotate(angle)
+    fff = Image.new('RGBA',rot.size,(255,)*4)
+    im = Image.composite(rot,fff,rot)
+
+    #im = im.rotate(angle,fillcolor='white')
     #im.show()
     
     im = im.convert('L')
@@ -65,12 +71,13 @@ def checkRotation(inputFilename,outputFilename,angle):
     inputImage = image_to_array(im)
     outputImage = load_image_from_filename(outputFilename)
 
+    #print(inputFilename)
     Tversky = computeTversky(inputImage,outputImage)
 
     closeness = np.abs(Tversky-1.0)
-    print(closeness)
+    #print(closeness)
 
-    if closeness < .05:
+    if closeness < .07:
         return True
     else:
         return False
@@ -91,9 +98,9 @@ def checkReflection(inputFilename, outputFilename, direction):
     Tversky = computeTversky(inputImage,outputImage)
 
     closeness = np.abs(Tversky-1.0)
-    print(closeness)
+    #print(closeness)
 
-    if closeness < .05:
+    if closeness < .07:
         return True
     else:
         return False

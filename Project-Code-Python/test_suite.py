@@ -34,57 +34,6 @@ class TestUM(unittest.TestCase):
 				self.problemDict[problem.name] = problem
 		#print("=================================")
 
-	
-	def test_fillTransform(self):
-		#flip occurs
-		attributes = {}
-		attributes["fill"] = "no"
-		transform = ("yes","no")
-		result = self.agent.fillTransform(attributes,transform)
-		self.assertTrue(result["fill"],"yes")
-
-		attributes = {}
-		attributes["fill"] = "yes"
-		transform = ("yes","no")
-		result = self.agent.fillTransform(attributes,transform)
-		self.assertTrue(result["fill"],"no")
-
-		attributes = {}
-		attributes["fill"] = "no"
-		transform = ("no","yes")
-		result = self.agent.fillTransform(attributes,transform)
-		self.assertTrue(result["fill"],"yes")
-
-		attributes = {}
-		attributes["fill"] = "yes"
-		transform = ("no","yes")
-		result = self.agent.fillTransform(attributes,transform)
-		self.assertTrue(result["fill"],"no")
-
-		#nothing should occur
-		attributes = {}
-		attributes["fill"] = "no"
-		transform = ("yes","yes")
-		result = self.agent.fillTransform(attributes,transform)
-		self.assertTrue(result["fill"],"no")
-
-		attributes = {}
-		attributes["fill"] = "no"
-		transform = ("no","no")
-		result = self.agent.fillTransform(attributes,transform)
-		self.assertTrue(result["fill"],"no")
-
-		attributes = {}
-		attributes["fill"] = "yes"
-		transform = ("no","no")
-		result = self.agent.fillTransform(attributes,transform)
-		self.assertTrue(result["fill"],"yes")
-
-		attributes = {}
-		attributes["fill"] = "yes"
-		transform = ("yes","yes")
-		result = self.agent.fillTransform(attributes,transform)
-		self.assertTrue(result["fill"],"yes")
 
 	"""
 	def test_guessReflection(self):
@@ -180,28 +129,6 @@ class TestUM(unittest.TestCase):
 		transform = ("bottom-left","bottom-left")
 		result = self.agent.alignmentTransform(attributes,transform)
 		self.assertTrue(result["alignment"],"top-right")
-
-	def test_size_transform(self):
-		# increase
-		attributes = {}
-		attributes["size"] = "medium"
-		transform = ("small","large")
-		result = self.agent.sizeTransform(attributes,transform)
-		self.assertTrue(result["size"],"very-large")
-
-		# increase
-		attributes = {}
-		attributes["size"] = "medium"
-		transform = ("large","small")
-		result = self.agent.sizeTransform(attributes,transform)
-		self.assertTrue(result["size"],"very-small")
-
-		# none
-		attributes = {}
-		attributes["size"] = "medium"
-		transform = ("large","large")
-		result = self.agent.sizeTransform(attributes,transform)
-		self.assertTrue(result["size"],"medium")
 
 	def test_agent_compareAttributes(self):
 		print("Validate agent's compareObjects method...")
@@ -498,6 +425,13 @@ class TestUM(unittest.TestCase):
 
 		self.assertEqual(result,answer,msg="Case:horizontal")		
 
+
+
+
+
+
+
+
 	def testIdentity(self):
 		print("Testing image identity transform")
 		problem = self.problemDict["Basic Problem B-01"]
@@ -551,6 +485,117 @@ class TestUM(unittest.TestCase):
 		imageFileNameB = problem.figures["B"].visualFilename
 		result = image_processing.checkReflection(imageFileNameA,imageFileNameB,"left_right")
 		self.assertEquals(result,True)
+
+	def test3x3symmetryC04(self):
+		print("Testing 3x3 G/C check C-04")
+		problem = self.problemDict["Basic Problem C-04"]
+		result = image_processing.checkRotation(problem.figures["G"].visualFilename,problem.figures["C"].visualFilename,90)
+		self.assertEqual(result,True)
+
+		result = image_processing.checkRotation(problem.figures["2"].visualFilename,problem.figures["2"].visualFilename,90)
+		self.assertEqual(result,False)
+		result = image_processing.checkRotation(problem.figures["4"].visualFilename,problem.figures["4"].visualFilename,90)
+		self.assertEqual(result,False)
+		result = image_processing.checkRotation(problem.figures["5"].visualFilename,problem.figures["5"].visualFilename,90)
+		self.assertEqual(result,False)
+		result = image_processing.checkRotation(problem.figures["6"].visualFilename,problem.figures["6"].visualFilename,90)
+		self.assertEqual(result,False)
+		result = image_processing.checkRotation(problem.figures["7"].visualFilename,problem.figures["7"].visualFilename,90)
+		self.assertEqual(result,False)
+
+		result = image_processing.checkRotation(problem.figures["1"].visualFilename,problem.figures["1"].visualFilename,90)
+		self.assertEqual(result,True)
+		result = image_processing.checkRotation(problem.figures["3"].visualFilename,problem.figures["3"].visualFilename,90)
+		self.assertEqual(result,True)
+		result = image_processing.checkRotation(problem.figures["8"].visualFilename,problem.figures["8"].visualFilename,90)
+		self.assertEqual(result,True)
+		
+	def test3x3symmetryC04(self):
+		print("Testing 3x3 G/C check C04")
+		problem = self.problemDict["Basic Problem C-04"]
+		result = image_processing.checkRotation(problem.figures["G"].visualFilename,problem.figures["C"].visualFilename,90)
+		self.assertEqual(result,True)
+
+		result = image_processing.checkRotation(problem.figures["2"].visualFilename,problem.figures["2"].visualFilename,90)
+		self.assertEqual(result,False)
+		result = image_processing.checkRotation(problem.figures["4"].visualFilename,problem.figures["4"].visualFilename,90)
+		self.assertEqual(result,False)
+		result = image_processing.checkRotation(problem.figures["5"].visualFilename,problem.figures["5"].visualFilename,90)
+		self.assertEqual(result,False)
+		result = image_processing.checkRotation(problem.figures["6"].visualFilename,problem.figures["6"].visualFilename,90)
+		self.assertEqual(result,False)
+		result = image_processing.checkRotation(problem.figures["7"].visualFilename,problem.figures["7"].visualFilename,90)
+		self.assertEqual(result,False)
+		result = image_processing.checkRotation(problem.figures["1"].visualFilename,problem.figures["1"].visualFilename,90)
+		self.assertEqual(result,True)
+		result = image_processing.checkRotation(problem.figures["3"].visualFilename,problem.figures["3"].visualFilename,90)
+		self.assertEqual(result,True)
+		result = image_processing.checkRotation(problem.figures["8"].visualFilename,problem.figures["8"].visualFilename,90)
+		self.assertEqual(result,True)
+
+	def test3x3symmetryC06(self):
+		print("Testing 3x3 G/C check C-06")
+		problem = self.problemDict["Basic Problem C-06"]
+		result = image_processing.checkRotation(problem.figures["G"].visualFilename,problem.figures["C"].visualFilename,90)
+		self.assertEqual(result,True)
+
+		result = image_processing.checkRotation(problem.figures["1"].visualFilename,problem.figures["1"].visualFilename,90)
+		self.assertEqual(result,False)
+		result = image_processing.checkRotation(problem.figures["2"].visualFilename,problem.figures["2"].visualFilename,90)
+		self.assertEqual(result,False)
+		result = image_processing.checkRotation(problem.figures["3"].visualFilename,problem.figures["3"].visualFilename,90)
+		self.assertEqual(result,False)
+		result = image_processing.checkRotation(problem.figures["5"].visualFilename,problem.figures["5"].visualFilename,90)
+		self.assertEqual(result,False)
+		result = image_processing.checkRotation(problem.figures["8"].visualFilename,problem.figures["8"].visualFilename,90)
+		self.assertEqual(result,False)
+
+		result = image_processing.checkRotation(problem.figures["4"].visualFilename,problem.figures["4"].visualFilename,90)
+		self.assertEqual(result,True)
+		result = image_processing.checkRotation(problem.figures["6"].visualFilename,problem.figures["6"].visualFilename,90)
+		self.assertEqual(result,True)
+		result = image_processing.checkRotation(problem.figures["7"].visualFilename,problem.figures["7"].visualFilename,90)
+		self.assertEqual(result,True)
+
+	def test3x3symmetryC10(self):
+		print("Testing 3x3 G/C check C-10")
+		problem = self.problemDict["Basic Problem C-10"]
+		result = image_processing.checkRotation(problem.figures["G"].visualFilename,problem.figures["C"].visualFilename,90)
+		self.assertEqual(result,True)
+
+		result = image_processing.checkRotation(problem.figures["1"].visualFilename,problem.figures["1"].visualFilename,90)
+		self.assertEqual(result,False)
+		result = image_processing.checkRotation(problem.figures["2"].visualFilename,problem.figures["2"].visualFilename,90)
+		self.assertEqual(result,False)
+		result = image_processing.checkRotation(problem.figures["3"].visualFilename,problem.figures["3"].visualFilename,90)
+		self.assertEqual(result,False)
+		result = image_processing.checkRotation(problem.figures["4"].visualFilename,problem.figures["4"].visualFilename,90)
+		self.assertEqual(result,False)
+		result = image_processing.checkRotation(problem.figures["6"].visualFilename,problem.figures["6"].visualFilename,90)
+		self.assertEqual(result,False)
+		result = image_processing.checkRotation(problem.figures["8"].visualFilename,problem.figures["8"].visualFilename,90)
+		self.assertEqual(result,False)
+
+
+		result = image_processing.checkRotation(problem.figures["5"].visualFilename,problem.figures["5"].visualFilename,90)
+		self.assertEqual(result,True)
+		result = image_processing.checkRotation(problem.figures["7"].visualFilename,problem.figures["7"].visualFilename,90)
+		self.assertEqual(result,True)
+
+	def testC04(self):
+		print("===================C04")
+		problem = self.problemDict["Basic Problem C-04"]
+		self.assertEqual(8, self.agent.Solve(problem))
+
+	def testC06(self):
+		print("===================C06")
+		problem = self.problemDict["Basic Problem C-06"]
+		self.assertEqual(7, self.agent.Solve(problem))
+
+	def testC10(self):
+		print("===================C10")
+		problem = self.problemDict["Basic Problem C-10"]
+		self.assertEqual(7, self.agent.Solve(problem))
 
 	def tearDown(self):
 		pass
