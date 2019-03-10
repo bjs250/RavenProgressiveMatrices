@@ -38,104 +38,205 @@ class Agent:
 		self.problem = problem
 		dummycount = 0
 		debug = False
-		self.log(debug, "Problem name", problem.name)
+		self.log(True, "Problem name", problem.name)
 
-		# Get objects, hardcoded 2x2, single object per figure
-		horizontal_pairs = self.pairObjects(problem.figures["A"].objects,problem.figures["B"].objects)
-		vertical_pairs = self.pairObjects(problem.figures["A"].objects,problem.figures["C"].objects)
-		
-		# Objects dictionary from Figure A
-		original = copy.deepcopy(problem.figures["A"].objects)
-		del_list = []
-
-		# Get relationships and transform, hardcoded 2x2
-		for pair in horizontal_pairs:
-			self.log(debug,"pair",self.pairToString(pair))
-
-			# get transform
-			if pair[1] is None:
-				del_list.append(pair[0].name)
-				continue
-			horizontal = self.getFunction(pair[0], pair[1])
+		if "B-" in problem.name:
+			# Get objects, hardcoded 2x2, single object per figure
+			horizontal_pairs = self.pairObjects(problem.figures["A"].objects,problem.figures["B"].objects)
+			vertical_pairs = self.pairObjects(problem.figures["A"].objects,problem.figures["C"].objects)
 			
-			# handle interdepencies
-			if "inside" in horizontal:
-				if horizontal["inside"] in horizontal_pairs:
-					del horizontal["inside"]
+			# Objects dictionary from Figure A
+			original = copy.deepcopy(problem.figures["A"].objects)
+			del_list = []
 
-			# Perform transform carefully
-			if pair[0] is not None:
-				result = self.performTransform(original[pair[0].name].attributes,horizontal)
-				original[pair[0].name].attributes = result
-			else:
-				dummyname = "d"+str(dummycount)
-				original[dummyname] = RavensObject(dummyname)
-				original[dummyname].attributes = {}
-				result = pair[1].attributes
-				original[dummyname].attributes = result
-				dummycount +=1
-			
-		for pair in vertical_pairs:
-			self.log(debug,"pair",self.pairToString(pair))
+			# Get relationships and transform, hardcoded 2x2
+			for pair in horizontal_pairs:
+				self.log(debug,"pair",self.pairToString(pair))
 
-			if pair[1] is None:
-				del_list.append(pair[0].name)
-				continue
+				# get transform
+				if pair[1] is None:
+					del_list.append(pair[0].name)
+					continue
+				horizontal = self.getFunction(pair[0], pair[1])
+				
+				# handle interdepencies
+				if "inside" in horizontal:
+					if horizontal["inside"] in horizontal_pairs:
+						del horizontal["inside"]
 
-			# get transform
-			vertical = self.getFunction(pair[0], pair[1])
-			
-			# handle interdepencies
-			if "inside" in vertical:
-				if vertical["inside"] in vertical_pairs:
-					del vertical["inside"]
-
-			# Perform transform carefilly
-			if pair[0] is not None:
-				result = self.performTransform(original[pair[0].name].attributes,vertical)
-				original[pair[0].name].attributes = result
-			else:
-				dummyname = "d"+str(dummycount)
-				original[dummyname] = RavensObject(dummyname)
-				original[dummyname].attributes = {}
-				result = pair[1].attributes
-				original[dummyname].attributes = result
-				dummycount +=1
-		
-		for element in del_list:
-			self.log(debug,"del",element)
-			del original[element]
-		
-		# Compare prediction to answers
-		answer_figures = [problem.figures[key] for key in problem.figures.keys() if key.isalpha() == False]
-		
-		best = 1000
-		answer = -1
-		for answer_figure in answer_figures:
-			pairs = self.pairObjects(original,answer_figure.objects)
-			sum = 0
-			for pair in pairs:
+				# Perform transform carefully
 				if pair[0] is not None:
-					str1 = pair[0].name
-					attr1 = original[str1].attributes
+					result = self.performTransform(original[pair[0].name].attributes,horizontal)
+					original[pair[0].name].attributes = result
 				else:
-					str1 = None
-					attr1 = {}
-				if pair[1] is not None:
-					str2 = pair[1].name
-					attr2 = answer_figure.objects[str2].attributes
-				else:
-					str2 = None
-					attr2 = {}
-				differences = self.compareAttributes(attr1, attr2)
-				sum += len(differences)
-			if sum < best:
-				answer = answer_figure.name
-				best = sum
-		if best != 0:
-			self.log(debug,"End of main:","True answer never found")
+					dummyname = "d"+str(dummycount)
+					original[dummyname] = RavensObject(dummyname)
+					original[dummyname].attributes = {}
+					result = pair[1].attributes
+					original[dummyname].attributes = result
+					dummycount +=1
+				
+			for pair in vertical_pairs:
+				self.log(debug,"pair",self.pairToString(pair))
 
-		return int(answer)
+				if pair[1] is None:
+					del_list.append(pair[0].name)
+					continue
+
+				# get transform
+				vertical = self.getFunction(pair[0], pair[1])
+				
+				# handle interdepencies
+				if "inside" in vertical:
+					if vertical["inside"] in vertical_pairs:
+						del vertical["inside"]
+
+				# Perform transform carefilly
+				if pair[0] is not None:
+					result = self.performTransform(original[pair[0].name].attributes,vertical)
+					original[pair[0].name].attributes = result
+				else:
+					dummyname = "d"+str(dummycount)
+					original[dummyname] = RavensObject(dummyname)
+					original[dummyname].attributes = {}
+					result = pair[1].attributes
+					original[dummyname].attributes = result
+					dummycount +=1
+			
+			for element in del_list:
+				self.log(debug,"del",element)
+				del original[element]
+			
+			# Compare prediction to answers
+			answer_figures = [problem.figures[key] for key in problem.figures.keys() if key.isalpha() == False]
+			
+			best = 1000
+			answer = -1
+			for answer_figure in answer_figures:
+				pairs = self.pairObjects(original,answer_figure.objects)
+				sum = 0
+				for pair in pairs:
+					if pair[0] is not None:
+						str1 = pair[0].name
+						attr1 = original[str1].attributes
+					else:
+						str1 = None
+						attr1 = {}
+					if pair[1] is not None:
+						str2 = pair[1].name
+						attr2 = answer_figure.objects[str2].attributes
+					else:
+						str2 = None
+						attr2 = {}
+					differences = self.compareAttributes(attr1, attr2)
+					sum += len(differences)
+				self.log(debug,answer_figure.name,sum)
+				if sum < best:
+					answer = answer_figure.name
+					best = sum
+			if best != 0:
+				self.log(True,"End of main:","True answer never found: " + str(best))
+
+			return int(answer)
+
+		else:
+			# Get objects, hardcoded 2x2, single object per figure
+			horizontal_pairs = self.pairObjects(problem.figures["E"].objects,problem.figures["F"].objects)
+			vertical_pairs = self.pairObjects(problem.figures["E"].objects,problem.figures["H"].objects)
+			
+			# Objects dictionary from Figure A
+			original = copy.deepcopy(problem.figures["E"].objects)
+			del_list = []
+
+			# Get relationships and transform, hardcoded 2x2
+			for pair in horizontal_pairs:
+				self.log(debug,"pair",self.pairToString(pair))
+
+				# get transform
+				if pair[1] is None:
+					del_list.append(pair[0].name)
+					continue
+				horizontal = self.getFunction(pair[0], pair[1])
+				
+				# handle interdepencies
+				if "inside" in horizontal:
+					if horizontal["inside"] in horizontal_pairs:
+						del horizontal["inside"]
+
+				# Perform transform carefully
+				if pair[0] is not None:
+					result = self.performTransform(original[pair[0].name].attributes,horizontal)
+					original[pair[0].name].attributes = result
+				else:
+					dummyname = "d"+str(dummycount)
+					original[dummyname] = RavensObject(dummyname)
+					original[dummyname].attributes = {}
+					result = pair[1].attributes
+					original[dummyname].attributes = result
+					dummycount +=1
+				
+			for pair in vertical_pairs:
+				self.log(debug,"pair",self.pairToString(pair))
+
+				if pair[1] is None:
+					del_list.append(pair[0].name)
+					continue
+
+				# get transform
+				vertical = self.getFunction(pair[0], pair[1])
+				
+				# handle interdepencies
+				if "inside" in vertical:
+					if vertical["inside"] in vertical_pairs:
+						del vertical["inside"]
+
+				# Perform transform carefilly
+				if pair[0] is not None:
+					result = self.performTransform(original[pair[0].name].attributes,vertical)
+					original[pair[0].name].attributes = result
+				else:
+					dummyname = "d"+str(dummycount)
+					original[dummyname] = RavensObject(dummyname)
+					original[dummyname].attributes = {}
+					result = pair[1].attributes
+					original[dummyname].attributes = result
+					dummycount +=1
+			
+			for element in del_list:
+				self.log(debug,"del",element)
+				del original[element]
+			
+			# Compare prediction to answers
+			answer_figures = [problem.figures[key] for key in problem.figures.keys() if key.isalpha() == False]
+			
+			best = 1000
+			answer = -1
+			for answer_figure in answer_figures:
+				pairs = self.pairObjects(original,answer_figure.objects)
+				sum = 0
+				for pair in pairs:
+					if pair[0] is not None:
+						str1 = pair[0].name
+						attr1 = original[str1].attributes
+					else:
+						str1 = None
+						attr1 = {}
+					if pair[1] is not None:
+						str2 = pair[1].name
+						attr2 = answer_figure.objects[str2].attributes
+					else:
+						str2 = None
+						attr2 = {}
+					differences = self.compareAttributes(attr1, attr2)
+					sum += len(differences)
+				self.log(debug,answer_figure.name,sum)
+				if sum < best:
+					answer = answer_figure.name
+					best = sum
+			if best != 0:
+				self.log(True,"End of main:","True answer never found: " + str(best))
+
+			return int(answer)
 
 	# Output: dictionary of differences
 	def compareAttributes(self,attributes1,attributes2):
@@ -165,6 +266,16 @@ class Agent:
 	def performTransform(self,attributes,transform):
 		
 		attributes_copy = attributes.copy() #make sure no side effects in this method
+
+		indep_attrs  = set()
+		inter_attrs = set()
+		for key in transform.keys():
+			#self.log(True,"key",key)
+			if key == "inside" or key == "above":
+				inter_attrs.add(key)
+			else:
+				indep_attrs.add(key)
+			
 		if transform == {}: # handle identity transform
 			return attributes_copy
 		if "angle" in transform and "angle" in attributes: # handle angle transform
@@ -172,14 +283,16 @@ class Agent:
 				del attributes_copy["angle"]
 			else:
 				attributes_copy = self.angleTransform(attributes_copy,transform["angle"])
-		if "shape" in transform: # handle shape transform
-			attributes_copy = self.stateTransform(attributes_copy,"shape",transform["shape"])    
+			indep_attrs.remove("angle")
+		
 		if "alignment" in transform: # handle alignment transform
 			attributes_copy = self.alignmentTransform(attributes_copy,transform["alignment"]) 
-		if "fill" in transform: # handle fill transform
-			attributes_copy = self.fillTransform(attributes_copy,transform["fill"]) 
-		if "size" in transform:
-			attributes_copy = self.sizeTransform(attributes_copy,transform["size"]) 
+			indep_attrs.remove("alignment")
+		
+		L = list(indep_attrs)
+		for key in L:
+			attributes_copy = self.stateTransform(attributes_copy,key,transform[key]) 
+			L.remove(key)
 
 		return attributes_copy
 
@@ -224,45 +337,7 @@ class Agent:
 			lr = current_alignment.split("-")[1]
 		attributes_copy["alignment"] = ud+"-"+lr
 		return attributes_copy
-
-	def fillTransform(self,attributes,transform):
-		attributes_copy = attributes.copy() #make sure no side effects in this method
-		current_fill = attributes["fill"]
-		if transform[0] != transform[1]:
-			if current_fill == "yes":
-				current_fill = "no"
-			elif current_fill == "no":
-				current_fill = "yes"
-		attributes_copy["fill"] = current_fill
-		return attributes_copy
-
-	def sizeTransform(self,attributes,transform):
-		attributes_copy = attributes.copy() #make sure no side effects in this method
-		d = {}
-		d["very small"] = 1
-		d["small"] = 2
-		d["medium"] = 3
-		d["large"] = 4
-		d["very large"] = 5
-		d["huge"] = 6
-		r = {}
-		r[1] = "very small"
-		r[2] = "small"
-		r[3] = "medium"
-		r[4] = "large"
-		r[5] = "very large"
-		r[6] = "huge"
-
-		current_size = attributes["size"]
-		
-		try:
-			difference = d[transform[1]]-d[transform[0]]
-			attributes_copy["size"] = r[d[current_size]+difference]
-		except:
-			print("error occcurred in size transform!")
-		finally:   
-			return attributes_copy
-		
+	
 	def log(self, debug, header,text):
 		if debug:
 			print(header,text)
