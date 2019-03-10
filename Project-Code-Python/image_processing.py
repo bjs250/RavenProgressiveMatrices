@@ -6,74 +6,112 @@ from PIL import Image
 import numpy as np
 from matplotlib import pyplot as plt
 
-def load_image(infilename) :
+def load_image_from_filename(infilename):
     x = Image.open(infilename,"r")
     x = x.convert('L')
     y = np.asarray(x.getdata(),dtype=np.float64).reshape((x.size[1],x.size[0]))
     y = np.asarray(y,dtype=np.uint16)
     return y
 
-# stolen
+def image_to_array(x):
+    y = np.asarray(x.getdata(),dtype=np.float64).reshape((x.size[1],x.size[0]))
+    y = np.asarray(y,dtype=np.uint16)
+    return y
+
 def save_image( npdata, outfilename ) :
     img = Image.fromarray( np.asarray( np.clip(npdata,0,255), dtype="uint32"), "L" )
     img.save( outfilename )
 
-def checkIdentity(inputFilename, outputFilename):
-    inputImage = load_image(inputFilename)
-    outputImage = load_image(outputFilename)
-    dim = inputImage.shape[0] * inputImage.shape[1]
-    sum = inputImage + outputImage
+def computeTversky(imageA,imageB):
+    
+    sum = imageA + imageB
     both_black = np.count_nonzero(sum == 510)
     both_white = np.count_nonzero(sum == 0)
     AandB = both_black + both_white
 
-    diffAB = inputImage - outputImage
+    diffAB = imageA - imageB
     AnotB = np.count_nonzero(diffAB != 0)
-    diffBA = outputImage - inputImage
+    diffBA = imageB - imageA
     BnotA = np.count_nonzero(diffBA != 0)
 
     alpha = 0.5
     beta = 0.5
     Tversky = AandB / (AandB + alpha * AnotB + beta * BnotA)
-    print(AandB,AnotB,BnotA,dim,Tversky)
+    print(AandB,AnotB,BnotA,Tversky)
+
+    return Tversky
+    
+def checkIdentity(inputFilename, outputFilename):
+    inputImage = load_image_from_filename(inputFilename)
+    outputImage = load_image_from_filename(outputFilename)
+    
+    Tversky = computeTversky(inputImage,outputImage)
 
     closeness = np.abs(Tversky-1.0)
     print(closeness)
+
     if closeness < .05:
         return True
     else:
         return False
 
+def checkRotation(inputFilename,outputFilename,angle):
+    im = Image.open(inputFilename)
+    im = im.rotate(angle,fillcolor='white')
+    #im.show()
+    
+    im = im.convert('L')
 
+    inputImage = image_to_array(im)
+    outputImage = load_image_from_filename(outputFilename)
 
+    Tversky = computeTversky(inputImage,outputImage)
 
+    closeness = np.abs(Tversky-1.0)
+    print(closeness)
 
-
-def checkReflection(image1_filename, image2_filename, axis):
-    tolerance = 100000  
-    image = load_image(image1_filename)
-    possible_reflection = load_image(image2_filename)
-
-    if axis == "vertical":
-        processed_reflection = np.fliplr(image)
-    elif axis == "horizontal":
-        processed_reflection = np.flipud(image)
-
-    debug = False
-    if debug:
-        plt.imshow(image, interpolation='nearest')
-        plt.show()
-        plt.imshow(possible_reflection, interpolation='nearest')
-        plt.show()
-        plt.imshow(processed_reflection, interpolation='nearest')
-        plt.show()
-
-    difference = np.sum(np.sum(abs(possible_reflection-processed_reflection)))
-    #print(difference)
-    if abs(difference) < tolerance:
+    if closeness < .05:
         return True
     else:
         return False
+
+def checkReflection(inputFilename, outputFilename, direction):
+    im = Image.open(inputFilename)
+    if direction == "left_right":
+        im = im.transpose(Image.FLIP_LEFT_RIGHT)
+    elif direction == "top_bottom":
+        im = im.transpose(Image.FLIP_TOP_BOTTOM)
+    #im.show()
+
+    im = im.convert('L')
+
+    inputImage = image_to_array(im)
+    outputImage = load_image_from_filename(outputFilename)
+
+    Tversky = computeTversky(inputImage,outputImage)
+
+    closeness = np.abs(Tversky-1.0)
+    print(closeness)
+
+    if closeness < .05:
+        return True
+    else:
+        return False
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 # Given two angles, determine whether a vertical or horizontal reflection occurs
 def guessRelection(angles):
@@ -130,9 +168,6 @@ def performReflection(current_angle,reflection_type):
     if current_angle >=360:
         current_angle -= 360
     return str(current_angle)
-
-    
-    
 
 
 if __name__ == "__main__":

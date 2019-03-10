@@ -504,7 +504,53 @@ class TestUM(unittest.TestCase):
 		imageFileNameA = problem.figures["A"].visualFilename
 		imageFileNameB = problem.figures["B"].visualFilename
 		result = image_processing.checkIdentity(imageFileNameA,imageFileNameB)
-		self.assertTrue(result,True)
+		self.assertEquals(result,True)
+
+		problem = self.problemDict["Basic Problem B-01"]
+		imageFileNameA = problem.figures["A"].visualFilename
+		imageFileNameB = problem.figures["1"].visualFilename
+		result = image_processing.checkIdentity(imageFileNameA,imageFileNameB)
+		self.assertEquals(result,False)
+
+		problem = self.problemDict["Basic Problem B-02"]
+		imageFileNameA = problem.figures["A"].visualFilename
+		imageFileNameB = problem.figures["B"].visualFilename
+		result = image_processing.checkIdentity(imageFileNameA,imageFileNameB)
+		self.assertEquals(result,True)
+
+		problem = self.problemDict["Basic Problem B-02"]
+		imageFileNameA = problem.figures["A"].visualFilename
+		imageFileNameB = problem.figures["1"].visualFilename
+		result = image_processing.checkIdentity(imageFileNameA,imageFileNameB)
+		self.assertEquals(result,False)
+
+		problem = self.problemDict["Basic Problem B-02"]
+		imageFileNameA = problem.figures["A"].visualFilename
+		imageFileNameB = problem.figures["2"].visualFilename
+		result = image_processing.checkIdentity(imageFileNameA,imageFileNameB)
+		self.assertEquals(result,False)
+
+		problem = self.problemDict["Basic Problem B-02"]
+		imageFileNameA = problem.figures["A"].visualFilename
+		imageFileNameB = problem.figures["4"].visualFilename
+		result = image_processing.checkIdentity(imageFileNameA,imageFileNameB)
+		self.assertEquals(result,False)
+
+	def testRotation(self):
+		print("Testing image rotation transform")
+		problem = self.problemDict["Basic Problem B-04"]
+		imageFileNameA = problem.figures["A"].visualFilename
+		imageFileNameB = problem.figures["B"].visualFilename
+		result = image_processing.checkRotation(imageFileNameA,imageFileNameB,270)
+		self.assertEquals(result,True)
+
+	def testReflection(self):
+		print("Testing image rotation transform")
+		problem = self.problemDict["Basic Problem B-03"]
+		imageFileNameA = problem.figures["A"].visualFilename
+		imageFileNameB = problem.figures["B"].visualFilename
+		result = image_processing.checkReflection(imageFileNameA,imageFileNameB,"left_right")
+		self.assertEquals(result,True)
 
 	def tearDown(self):
 		pass
