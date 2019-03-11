@@ -47,251 +47,54 @@ class Agent:
 			
 			# Objects dictionary from Figure A
 			original = copy.deepcopy(problem.figures["A"].objects)
-			del_list = []
-
-			# Get relationships and transform, hardcoded 2x2
-			for pair in horizontal_pairs:
-				self.log(debug,"pair",self.pairToString(pair))
-
-				# get transform
-				if pair[1] is None:
-					del_list.append(pair[0].name)
-					continue
-				horizontal = self.getFunction(pair[0], pair[1])
-				
-				# handle interdepencies
-				if "inside" in horizontal:
-					if horizontal["inside"] in horizontal_pairs:
-						del horizontal["inside"]
-
-				# Perform transform carefully
-				if pair[0] is not None:
-					result = self.performTransform(original[pair[0].name].attributes,horizontal)
-					original[pair[0].name].attributes = result
-				else:
-					dummyname = "d"+str(dummycount)
-					original[dummyname] = RavensObject(dummyname)
-					original[dummyname].attributes = {}
-					result = pair[1].attributes
-					original[dummyname].attributes = result
-						
-					dummycount +=1
-				
-			pairMap = {}
-			for pair in vertical_pairs:
-				str_pair = self.pairToString(pair)
-				pairMap[str_pair[1]] = str_pair[0]
-
-			for pair in vertical_pairs:
-				self.log(debug,"pair",self.pairToString(pair))
-
-				if pair[1] is None:
-					del_list.append(pair[0].name)
-					continue
-
-				# get transform
-				vertical = self.getFunction(pair[0], pair[1])
-				
-				# handle interdepencies
-				if "inside" in vertical:
-					if vertical["inside"] in vertical_pairs:
-						del vertical["inside"]
-
-				# Perform transform carefilly
-				if pair[0] is not None:
-					result = self.performTransform(original[pair[0].name].attributes,vertical)
-					original[pair[0].name].attributes = result
-				else:
-					dummyname = "d"+str(dummycount)
-					original[dummyname] = RavensObject(dummyname)
-					original[dummyname].attributes = {}
-					#print("===============debug==============")
-					#print(self.pairToString(pair))
-					#print(pair[1].attributes)
-
-					if "inside" in pair[1].attributes:
-						inside_str = pair[1].attributes["inside"]
-						entries = inside_str.split(",")
-						edit_string = ""
-						#print(answer_figure.name,pairMap)
-						for entry in entries:
-							if pairMap[entry] is not None:
-								edit_string += pairMap[entry] + ","
-						edit_string = edit_string[:-1]
-						#print(edit_string)
-						pair[1].attributes["inside"] = edit_string
-
-					result = pair[1].attributes
-					#print(result)
-					original[dummyname].attributes = result
-					dummycount +=1
+		
+		elif problem.problemType == "3x3":
+			horizontal_pairs = self.pairObjects(problem.figures["E"].objects,problem.figures["F"].objects)
+			vertical_pairs = self.pairObjects(problem.figures["E"].objects,problem.figures["H"].objects)
 			
-			for element in del_list:
-				self.log(debug,"del",element)
-				del original[element]
+			original = copy.deepcopy(problem.figures["E"].objects)
+			
+		del_list = []
+		
+		# Change the original by using the horizontal and vertical pairs as reference
+		self.mutateByTransform(horizontal_pairs,original,del_list,dummycount)
+		self.mutateByTransform(vertical_pairs,original,del_list,dummycount)
+		
+		# 
+		for element in del_list:
+			self.log(debug,"del",element)
+			del original[element]
 
-			# Do a post check on interdepedencies
-			for key,obj in original.items():
-				if "inside" in obj.attributes:
-					current_str = obj.attributes["inside"]
+		# Obtain list of interdependent attributes in the proposed answer
+		interdependent_attributes = list()
+		for obj_name,obj in original.items():
+			for attr_name,attribute in obj.attributes.items():
+				if attribute is not None:
+					if (len(attribute) == 1 and attribute[0].isalpha()) or ("," in attribute):
+						if attr_name not in interdependent_attributes:
+							interdependent_attributes.append(attr_name)
+
+		# Modify interdependencies (for example, if objects have been deleted)
+		for key,obj in original.items():
+			for attr_name in interdependent_attributes:
+				if attr_name in obj.attributes and obj.attributes[attr_name] is not None:
+					current_str = obj.attributes[attr_name]
 					entries = current_str.split(",")
 					edit_string = ""
 					for entry in entries:
 						if entry in original.keys():
 							edit_string += entry + ","
 					if edit_string == "":
-						del obj.attributes["inside"]
+						del obj.attributes[attr_name]
 					else:
 						edit_string = edit_string[:-1]
-						obj.attributes["inside"] = edit_string
+						obj.attributes[attr_name] = edit_string
 
-			# Compare prediction to answers
-			answer_figures = [problem.figures[key] for key in problem.figures.keys() if key.isalpha() == False]
-			
-			best = 1000
-			answer = -1
-			for answer_figure in answer_figures:
-				pairs = self.pairObjects(original,answer_figure.objects)
-				sum = 0
-
-				# fix interdependent attributes
-				pairMap = {}
-				for pair in pairs:
-					str_pair = self.pairToString(pair)
-					pairMap[str_pair[1]] = str_pair[0]
-				for key,obj in answer_figure.objects.items():
-					if "inside" in obj.attributes:
-						inside_str = obj.attributes["inside"]
-						entries = inside_str.split(",")
-						edit_string = ""
-						#print(answer_figure.name,pairMap)
-						for entry in entries:
-							if pairMap[entry] is not None:
-								edit_string += pairMap[entry] + ","
-						edit_string = edit_string[:-1]
-						#print(edit_string)
-						obj.attributes["inside"] = edit_string
-
-
-					if "above" in obj.attributes:
-						inside_str = obj.attributes["above"]
-						entries = inside_str.split(",")
-						edit_string = ""
-						#print(pairMap)
-						for entry in entries:
-							if pairMap[entry] is not None:
-								edit_string += pairMap[entry] + ","
-						edit_string = edit_string[:-1]
-						obj.attributes["above"] = edit_string
-
-				for pair in pairs:
-					if pair[0] is not None:
-						str1 = pair[0].name
-						attr1 = original[str1].attributes
-					else:
-						str1 = None
-						attr1 = {}
-					if pair[1] is not None:
-						str2 = pair[1].name
-						attr2 = answer_figure.objects[str2].attributes
-					else:
-						str2 = None
-						attr2 = {}
-					differences = self.compareAttributes(attr1, attr2)
-					sum += len(differences)
-				self.log(debug,answer_figure.name,sum)
-				if sum < best:
-					answer = answer_figure.name
-					best_answer = answer_figure
-					best_pairs = pairs
-					best_pairMap = pairMap
-					best = sum
-			if best != 0:
-				self.log(True,"End of main:","True answer never found: " + str(best))
-				print("Answer: " + answer)
-				print("Generated")
-				for key,value in original.items():
-					print(key,value.attributes)
-				print("Answer")
-				for key,value in best_answer.objects.items():
-					print(key,value.attributes)
-				print(best_pairMap)
-
-
-
-			return int(answer)
-
-		else:
-			# Get objects, hardcoded 2x2, single object per figure
-			horizontal_pairs = self.pairObjects(problem.figures["E"].objects,problem.figures["F"].objects)
-			vertical_pairs = self.pairObjects(problem.figures["E"].objects,problem.figures["H"].objects)
-			
-			# Objects dictionary from Figure A
-			original = copy.deepcopy(problem.figures["E"].objects)
-			del_list = []
-
-			# Get relationships and transform, hardcoded 2x2
-			for pair in horizontal_pairs:
-				self.log(debug,"pair",self.pairToString(pair))
-
-				# get transform
-				if pair[1] is None:
-					del_list.append(pair[0].name)
-					continue
-				horizontal = self.getFunction(pair[0], pair[1])
-				
-				# handle interdepencies
-				if "inside" in horizontal:
-					if horizontal["inside"] in horizontal_pairs:
-						del horizontal["inside"]
-
-				# Perform transform carefully
-				if pair[0] is not None:
-					result = self.performTransform(original[pair[0].name].attributes,horizontal)
-					original[pair[0].name].attributes = result
-				else:
-					dummyname = "d"+str(dummycount)
-					original[dummyname] = RavensObject(dummyname)
-					original[dummyname].attributes = {}
-					result = pair[1].attributes
-					original[dummyname].attributes = result
-					dummycount +=1
-				
-			for pair in vertical_pairs:
-				self.log(debug,"pair",self.pairToString(pair))
-
-				if pair[1] is None:
-					del_list.append(pair[0].name)
-					continue
-
-				# get transform
-				vertical = self.getFunction(pair[0], pair[1])
-				
-				# handle interdepencies
-				if "inside" in vertical:
-					if vertical["inside"] in vertical_pairs:
-						del vertical["inside"]
-
-				# Perform transform carefilly
-				if pair[0] is not None:
-					result = self.performTransform(original[pair[0].name].attributes,vertical)
-					original[pair[0].name].attributes = result
-				else:
-					dummyname = "d"+str(dummycount)
-					original[dummyname] = RavensObject(dummyname)
-					original[dummyname].attributes = {}
-					result = pair[1].attributes
-					original[dummyname].attributes = result
-					dummycount +=1
-			
-			for element in del_list:
-				self.log(debug,"del",element)
-				del original[element]
-			
-			# Compare prediction to answers
-			answer_figures = [problem.figures[key] for key in problem.figures.keys() if key.isalpha() == False]
-			
-			# Execute smart tester
+		# Compare prediction to answers
+		answer_figures = [problem.figures[key] for key in problem.figures.keys() if key.isalpha() == False]
+		
+		#Execute smart tester
+		if problem.problemType == "3x3":
 			check = image_processing.checkRotation(problem.figures["G"].visualFilename,problem.figures["C"].visualFilename,90)
 			selfcheck = image_processing.checkRotation(problem.figures["G"].visualFilename,problem.figures["G"].visualFilename,90)
 			if check and not selfcheck:
@@ -325,35 +128,124 @@ class Agent:
 			#for answer_figure in answer_figures:
 			#	print(answer_figure.name)
 
-		
-			best = 1000
-			answer = -1
-			for answer_figure in answer_figures:
-				pairs = self.pairObjects(original,answer_figure.objects)
-				sum = 0
-				for pair in pairs:
-					if pair[0] is not None:
-						str1 = pair[0].name
-						attr1 = original[str1].attributes
-					else:
-						str1 = None
-						attr1 = {}
-					if pair[1] is not None:
-						str2 = pair[1].name
-						attr2 = answer_figure.objects[str2].attributes
-					else:
-						str2 = None
-						attr2 = {}
-					differences = self.compareAttributes(attr1, attr2)
-					sum += len(differences)
-				self.log(debug,answer_figure.name,sum)
-				if sum < best:
-					answer = answer_figure.name
-					best = sum
-			if best != 0:
-				self.log(True,"End of main:","True answer never found: " + str(best))
+		best = 1000
+		answer = -1
+		for answer_figure in answer_figures:
+			pairs = self.pairObjects(original,answer_figure.objects)
+			sum = 0
 
-			return int(answer)
+			# fix interdependent attributes
+			pairMap = {}
+			for pair in pairs:
+				str_pair = self.pairToString(pair)
+				pairMap[str_pair[1]] = str_pair[0]
+			for key,obj in answer_figure.objects.items():
+				for attr_name in interdependent_attributes:
+					if attr_name in obj.attributes:
+						inside_str = obj.attributes[attr_name]
+						entries = inside_str.split(",")
+						edit_string = ""
+						#print(answer_figure.name,pairMap)
+						for entry in entries:
+							if pairMap[entry] is not None:
+								edit_string += pairMap[entry] + ","
+						edit_string = edit_string[:-1]
+						#print(edit_string)
+						obj.attributes[attr_name] = edit_string
+
+			for pair in pairs:
+				if pair[0] is not None:
+					str1 = pair[0].name
+					attr1 = original[str1].attributes
+				else:
+					str1 = None
+					attr1 = {}
+				if pair[1] is not None:
+					str2 = pair[1].name
+					attr2 = answer_figure.objects[str2].attributes
+				else:
+					str2 = None
+					attr2 = {}
+				differences = self.compareAttributes(attr1, attr2)
+				sum += len(differences)
+			self.log(debug,answer_figure.name,sum)
+			if sum < best:
+				answer = answer_figure.name
+				best_answer = answer_figure
+				best_pairs = pairs
+				best_pairMap = pairMap
+				best = sum
+		if best != 0:
+			self.log(True,"End of main:","True answer never found: " + str(best))
+			#print("Answer: " + answer)
+			#print("Generated")
+			#for key,value in original.items():
+			#	print(key,value.attributes)
+			#print("Answer")
+			#for key,value in best_answer.objects.items():
+			#	print(key,value.attributes)
+			#print(best_pairMap)
+
+		return int(answer)
+
+#=======================================================================================
+
+# Get relationships and transform, hardcoded 2x2
+	def mutateByTransform(self,pairs,original,del_list,dummycount):
+			
+		pairMap = {}
+		for pair in pairs:
+			str_pair = self.pairToString(pair)
+			pairMap[str_pair[1]] = str_pair[0]
+
+		for pair in pairs:
+			#self.log(debug,"pair",self.pairToString(pair))
+
+			# get transform
+			if pair[1] is None:
+				del_list.append(pair[0].name)
+				continue
+			funct = self.getFunction(pair[0], pair[1])
+
+			
+			# Obtain list of interdependent attributes in the proposed answer
+			interdependent_attributes = list()
+			for obj_name,obj in original.items():
+				for attr_name,attribute in obj.attributes.items():
+					if attribute is not None:
+						if (len(attribute) == 1 and attribute[0].isalpha()) or ("," in attribute):
+							if attr_name not in interdependent_attributes:
+								interdependent_attributes.append(attr_name)
+			
+			# handle interdepencies
+			for attr_name in interdependent_attributes:	
+				if attr_name in funct:
+					if funct[attr_name] in pairs:
+						del funct[attr_name]
+
+			# Perform transform carefully
+			if pair[0] is not None:
+				result = self.performTransform(original[pair[0].name].attributes,funct)
+				original[pair[0].name].attributes = result
+			else:
+				dummyname = "d"+str(dummycount)
+				original[dummyname] = RavensObject(dummyname)
+				original[dummyname].attributes = {}
+
+				for attr_name in interdependent_attributes:	
+					if attr_name in pair[1].attributes:
+						inside_str = pair[1].attributes[attr_name]
+						entries = inside_str.split(",")
+						edit_string = ""
+						for entry in entries:
+							if pairMap[entry] is not None:
+								edit_string += pairMap[entry] + ","
+						edit_string = edit_string[:-1]
+						pair[1].attributes[attr_name] = edit_string
+
+					result = pair[1].attributes
+					original[dummyname].attributes = result
+					dummycount +=1
 
 	# Output: dictionary of differences
 	def compareAttributes(self,attributes1,attributes2):

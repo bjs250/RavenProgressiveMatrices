@@ -11,6 +11,7 @@ def load_image_from_filename(infilename):
     x = x.convert('L')
     y = np.asarray(x.getdata(),dtype=np.float64).reshape((x.size[1],x.size[0]))
     y = np.asarray(y,dtype=np.uint16)
+    x.close()
     return y
 
 def image_to_array(x):
@@ -21,6 +22,7 @@ def image_to_array(x):
 def save_image( npdata, outfilename ) :
     img = Image.fromarray( np.asarray( np.clip(npdata,0,255), dtype="uint32"), "L" )
     img.save( outfilename )
+    img.close()
 
 def computeTversky(imageA,imageB):
     
@@ -77,6 +79,11 @@ def checkRotation(inputFilename,outputFilename,angle):
     closeness = np.abs(Tversky-1.0)
     #print(closeness)
 
+    im2.close()
+    rot.close()
+    fff.close()
+    im.close()
+
     if closeness < .07:
         return True
     else:
@@ -99,6 +106,8 @@ def checkReflection(inputFilename, outputFilename, direction):
 
     closeness = np.abs(Tversky-1.0)
     #print(closeness)
+
+    im.close()
 
     if closeness < .07:
         return True
