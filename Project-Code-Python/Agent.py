@@ -74,8 +74,14 @@ class Agent:
 					original[dummyname].attributes = {}
 					result = pair[1].attributes
 					original[dummyname].attributes = result
+						
 					dummycount +=1
 				
+			pairMap = {}
+			for pair in vertical_pairs:
+				str_pair = self.pairToString(pair)
+				pairMap[str_pair[1]] = str_pair[0]
+
 			for pair in vertical_pairs:
 				self.log(debug,"pair",self.pairToString(pair))
 
@@ -99,14 +105,46 @@ class Agent:
 					dummyname = "d"+str(dummycount)
 					original[dummyname] = RavensObject(dummyname)
 					original[dummyname].attributes = {}
+					#print("===============debug==============")
+					#print(self.pairToString(pair))
+					#print(pair[1].attributes)
+
+					if "inside" in pair[1].attributes:
+						inside_str = pair[1].attributes["inside"]
+						entries = inside_str.split(",")
+						edit_string = ""
+						#print(answer_figure.name,pairMap)
+						for entry in entries:
+							if pairMap[entry] is not None:
+								edit_string += pairMap[entry] + ","
+						edit_string = edit_string[:-1]
+						#print(edit_string)
+						pair[1].attributes["inside"] = edit_string
+
 					result = pair[1].attributes
+					#print(result)
 					original[dummyname].attributes = result
 					dummycount +=1
 			
 			for element in del_list:
 				self.log(debug,"del",element)
 				del original[element]
-			
+
+			# Do a post check on interdepedencies
+			for key,obj in original.items():
+				if "inside" in obj.attributes:
+					current_str = obj.attributes["inside"]
+					entries = current_str.split(",")
+					edit_string = ""
+					for entry in entries:
+						if entry in original.keys():
+							edit_string += entry + ","
+					if edit_string == "":
+						del obj.attributes["inside"]
+					else:
+						edit_string = edit_string[:-1]
+						obj.attributes["inside"] = edit_string
+
 			# Compare prediction to answers
 			answer_figures = [problem.figures[key] for key in problem.figures.keys() if key.isalpha() == False]
 			
@@ -115,6 +153,37 @@ class Agent:
 			for answer_figure in answer_figures:
 				pairs = self.pairObjects(original,answer_figure.objects)
 				sum = 0
+
+				# fix interdependent attributes
+				pairMap = {}
+				for pair in pairs:
+					str_pair = self.pairToString(pair)
+					pairMap[str_pair[1]] = str_pair[0]
+				for key,obj in answer_figure.objects.items():
+					if "inside" in obj.attributes:
+						inside_str = obj.attributes["inside"]
+						entries = inside_str.split(",")
+						edit_string = ""
+						#print(answer_figure.name,pairMap)
+						for entry in entries:
+							if pairMap[entry] is not None:
+								edit_string += pairMap[entry] + ","
+						edit_string = edit_string[:-1]
+						#print(edit_string)
+						obj.attributes["inside"] = edit_string
+
+
+					if "above" in obj.attributes:
+						inside_str = obj.attributes["above"]
+						entries = inside_str.split(",")
+						edit_string = ""
+						#print(pairMap)
+						for entry in entries:
+							if pairMap[entry] is not None:
+								edit_string += pairMap[entry] + ","
+						edit_string = edit_string[:-1]
+						obj.attributes["above"] = edit_string
+
 				for pair in pairs:
 					if pair[0] is not None:
 						str1 = pair[0].name
@@ -133,9 +202,22 @@ class Agent:
 				self.log(debug,answer_figure.name,sum)
 				if sum < best:
 					answer = answer_figure.name
+					best_answer = answer_figure
+					best_pairs = pairs
+					best_pairMap = pairMap
 					best = sum
 			if best != 0:
 				self.log(True,"End of main:","True answer never found: " + str(best))
+				print("Answer: " + answer)
+				print("Generated")
+				for key,value in original.items():
+					print(key,value.attributes)
+				print("Answer")
+				for key,value in best_answer.objects.items():
+					print(key,value.attributes)
+				print(best_pairMap)
+
+
 
 			return int(answer)
 
@@ -219,7 +301,7 @@ class Agent:
 				# Do the rotation check
 				for answer_figure in answer_figures:
 					result = image_processing.checkRotation(answer_figure.visualFilename,answer_figure.visualFilename,90)
-					print(answer_figure.name,result)
+					#print(answer_figure.name,result)
 					if result == True:
 						passed.append(answer_figure)
 
@@ -230,7 +312,7 @@ class Agent:
 					falseCount = 0
 					for question_figure in question_figures:
 						result = image_processing.checkIdentity(answer_figure.visualFilename,question_figure.visualFilename)
-						print(question_figure.name,answer_figure.name,result, falseCount)
+						#print(question_figure.name,answer_figure.name,result, falseCount)
 						if result == False:
 							falseCount += 1
 							if falseCount == 8:
@@ -238,10 +320,10 @@ class Agent:
 				
 				answer_figures = final_passed
 
-			print("remaining answers:")
+			#print("remaining answers:")
 
-			for answer_figure in answer_figures:
-				print(answer_figure.name)
+			#for answer_figure in answer_figures:
+			#	print(answer_figure.name)
 
 		
 			best = 1000
