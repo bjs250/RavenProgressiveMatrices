@@ -6,14 +6,10 @@ import numpy as np
 import image_processing
 
 def connectedComponents(imageFilename):
-    grid = image_processing.load_image_from_filename(imageFilename)
-    
-    #grid = np.ones((4,4)) * 255
-    #grid[1][1] = 0
-    #grid[1][2] = 0
-    #grid[2][2] = 0
-    #grid[3][3] = 0
-    #grid[3][0] = 0
+    if type(imageFilename) != type(np.ones((1,1))):
+        grid = image_processing.load_image_from_filename(imageFilename)
+    else:
+        grid = imageFilename
 
     counter = 1
     #print(grid)
@@ -46,3 +42,15 @@ def connectedComponents(imageFilename):
     #print(grid)
 
     return counter
+
+def computePixelRatio(grid,num):
+    black = 0
+    for row in range(grid.shape[0]):
+        mincol = 0
+        maxcol = 0
+        col = 0
+        while col < grid.shape[1] and grid[row][col] != num:
+            if grid[row][col] == num:
+                mincol = col
+            col += 1
+        print(mincol) 

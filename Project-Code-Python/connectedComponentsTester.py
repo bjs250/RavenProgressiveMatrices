@@ -31,18 +31,40 @@ class TestUM(unittest.TestCase):
 			for problem in set.problems: 
 				self.problemDict[problem.name] = problem
 		
-	def testB01(self):
+	def test_B01_A(self):
 		problem = self.problemDict["Basic Problem B-01"]
 		imageFileNameA = problem.figures["A"].visualFilename
 		count = connectedComponents.connectedComponents(imageFileNameA)
 		self.assertEqual(count,1)
 
-	def testB02(self):
+	def test_B02_A(self):
 		problem = self.problemDict["Basic Problem B-02"]
 		imageFileNameA = problem.figures["A"].visualFilename
 		count = connectedComponents.connectedComponents(imageFileNameA)
 		self.assertEqual(count,2)
 		
+	def test_B03_1(self):
+		problem = self.problemDict["Basic Problem B-03"]
+		imageFileNameA = problem.figures["1"].visualFilename
+		count = connectedComponents.connectedComponents(imageFileNameA)
+		self.assertEqual(count,1)
+
+	def test_CC(self):
+		grid = np.ones((10,10)) * 255
+		grid[1][2] = 0
+		grid[2][2:8] = 0
+		grid[4][2:8] = 0
+		grid[6][2:8] = 0
+		grid[3][2] = 0
+		grid[5][2] = 0
+		grid[3][7] = 0
+		grid[5][7] = 0
+		
+		np.set_printoptions(threshold=np.inf)
+		print("\n")
+		print(grid)
+		count = connectedComponents.computePixelRatio(grid,0)
+		print(count)
 
 	def tearDown(self):
 		pass
