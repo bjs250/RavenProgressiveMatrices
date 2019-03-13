@@ -175,6 +175,7 @@ class Agent:
 				best_pairs = pairs
 				best_pairMap = pairMap
 				best = sum
+			print(answer_figure.name,sum)
 		if best != 0:
 			self.log(True,"End of main:","True answer never found: " + str(best))
 			#print("Answer: " + answer)
@@ -276,11 +277,11 @@ class Agent:
 		
 		attributes_copy = attributes.copy() #make sure no side effects in this method
 
-		indep_attrs  = set()
+		indep_attrs = set()
 		inter_attrs = set()
 		for key in transform.keys():
 			#self.log(True,"key",key)
-			if key == "inside" or key == "above":
+			if key == "inside" or key == "above" or key =="overlaps" or key == "left-of":
 				inter_attrs.add(key)
 			else:
 				indep_attrs.add(key)
@@ -294,9 +295,11 @@ class Agent:
 				attributes_copy = self.angleTransform(attributes_copy,transform["angle"])
 			indep_attrs.remove("angle")
 		
+		
 		if "alignment" in transform: # handle alignment transform
 			attributes_copy = self.alignmentTransform(attributes_copy,transform["alignment"]) 
 			indep_attrs.remove("alignment")
+		
 		
 		L = list(indep_attrs)
 		for key in L:
