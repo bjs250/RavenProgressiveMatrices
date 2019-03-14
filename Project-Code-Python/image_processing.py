@@ -45,7 +45,7 @@ def computeTversky(imageA,imageB):
     alpha = 0.5
     beta = 0.5
     Tversky = AandB / (AandB + alpha * AnotB + beta * BnotA)
-    print(AandB,AnotB,BnotA,AandB+AnotB+BnotA,Tversky,1.0-Tversky)
+    #print(AandB,AnotB,BnotA,AandB+AnotB+BnotA,Tversky,1.0-Tversky)
 
     return Tversky
 
@@ -67,16 +67,38 @@ def diffs(arr1,arr2):
     AnotB = 0
     BnotA = 0
     AandB = 0
-    for row in range(arr1.shape[0]):
-        for col in range(arr1.shape[1]):
-            if arr1[row][col] == 0 and arr2[row][col] == 255:
-                AnotB +=1
-            elif arr1[row][col] == 255 and arr2[row][col] == 0:
-                BnotA +=1
-            elif arr1[row][col] == 0 and arr2[row][col] == 0:
-                AandB += 1
+
+    mask1 = (arr1 == 255) #1 = white, 0 = black
+    mask2 = (arr2 == 255)
+    mask3 = (arr1 == 0) #1 = black, 0 = white
+    mask4 = (arr2 == 0)
+    
+    AandB = np.count_nonzero(np.bitwise_and(mask3,mask4)) # both black
+    AnotB = np.count_nonzero(np.bitwise_and(mask1,mask4)) # one white one black
+    BnotA = np.count_nonzero(np.bitwise_and(mask2,mask3)) # one white one black
+    
+    # print("new",AandB,AnotB,BnotA)
+
+    # AnotB = 0
+    # BnotA = 0
+    # AandB = 0
+
+
+    # for row in range(arr1.shape[0]):
+    #     for col in range(arr1.shape[1]):
+    #         if arr1[row][col] == 0 and arr2[row][col] == 255:
+    #             AnotB +=1
+    #         elif arr1[row][col] == 255 and arr2[row][col] == 0:
+    #             BnotA +=1
+    #         elif arr1[row][col] == 0 and arr2[row][col] == 0:
+    #             AandB += 1
+    # print("old",AandB,AnotB,BnotA)
+
     return (AnotB,BnotA,AandB)
 
+def computeDPR(inputFilename):
+    img = load_image_from_filename(inputFilename)
+    return np.count_nonzero(img == 0)/(img.shape[0]*img.shape[1])
 
 def checkIdentity(inputFilename, outputFilename):
     inputImage = load_image_from_filename(inputFilename)
@@ -85,7 +107,7 @@ def checkIdentity(inputFilename, outputFilename):
     Tversky = computeTversky(inputImage,outputImage)
 
     closeness = np.abs(Tversky-1.0)
-    print(closeness,closeness_threshold)
+    #print(closeness,closeness_threshold)
 
     if closeness < closeness_threshold:
         return True
@@ -103,7 +125,7 @@ def checkIdentityArrays(input, output):
     else:
         return False
 
-def checkRotation(inputFilename,outputFilename,angle):
+def checkRotation(inputFilename,outputFilename,angle, closeness_threshold):
     orig_im = Image.open(inputFilename)
     
     im2 = orig_im.convert('RGBA')
@@ -112,6 +134,7 @@ def checkRotation(inputFilename,outputFilename,angle):
     im = Image.composite(rot,fff,rot)
 
     #im = im.rotate(angle,fillcolor='white')
+    #orig_im.show()
     #im.show()
     
     im = im.convert('L')
@@ -189,7 +212,7 @@ def checkAddition(inputFilename1, inputFilename2, outputFilename):
                 addition[row][col] = 0
     plt.show()
     result = checkIdentityArrays(addition,out)
-    print(result)
+    #print(result)
     return result
 
 

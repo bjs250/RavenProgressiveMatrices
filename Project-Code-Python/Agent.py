@@ -41,6 +41,7 @@ class Agent:
 		self.log(True, "Problem name", problem.name)
 
 		answer_figures = [problem.figures[key] for key in problem.figures.keys() if key.isalpha() == False]
+		closeness_threshold = 0.7
 
 		if problem.problemType == "2x2":
 			# Get objects, hardcoded 2x2, single object per figure
@@ -61,6 +62,23 @@ class Agent:
 					if image_processing.checkAddition(problem.figures["F"].visualFilename,problem.figures["H"].visualFilename,answer_figure.visualFilename):
 						print("addition")
 						return int(answer_figure.name)
+
+			# DPR Testing
+			DPRE = image_processing.computeDPR(problem.figures["E"].visualFilename)
+			DPRF = image_processing.computeDPR(problem.figures["F"].visualFilename)
+			DPRH = image_processing.computeDPR(problem.figures["H"].visualFilename)
+			print("DPR",DPRE,DPRF,DPRH)
+
+			if DPRF > DPRE and DPRH > DPRE:
+				passed = list()
+				print("DPR removal triggered")
+				for answer_figure in answer_figures:
+					DPR = image_processing.computeDPR(answer_figure.visualFilename)
+					if DPR > DPRE:
+						passed.append(answer_figure)
+					else:
+						print(answer_figure.name,DPR)
+				answer_figures = passed
 
 			# Clock check
 			reflectionCheck1 = image_processing.checkReflection(problem.figures["B"].visualFilename,problem.figures["H"].visualFilename,"top_bottom")
@@ -116,19 +134,19 @@ class Agent:
 		if problem.problemType == "3x3":
 
 			# Rotation Symmetry Test
-			check = image_processing.checkRotation(problem.figures["G"].visualFilename,problem.figures["C"].visualFilename,90)
-			selfcheck = image_processing.checkRotation(problem.figures["G"].visualFilename,problem.figures["G"].visualFilename,90)
-			check2 = image_processing.checkRotation(problem.figures["H"].visualFilename,problem.figures["F"].visualFilename,90)
-			selfcheck2 = image_processing.checkRotation(problem.figures["H"].visualFilename,problem.figures["H"].visualFilename,90)
+			threshold = 0.1
+			check = image_processing.checkRotation(problem.figures["G"].visualFilename,problem.figures["C"].visualFilename,90,threshold)
+			selfcheck = image_processing.checkRotation(problem.figures["G"].visualFilename,problem.figures["G"].visualFilename,90,threshold)
 			
 			#print(check,selfcheck)
-			if check and not selfcheck or (check2 and not selfcheck2):
+			if check and not selfcheck:
 				
 				passed = list()
+				print("Rotation removal triggered")
 				
 				# Do the rotation check
 				for answer_figure in answer_figures:
-					result = image_processing.checkRotation(answer_figure.visualFilename,answer_figure.visualFilename,90)
+					result = image_processing.checkRotation(answer_figure.visualFilename,answer_figure.visualFilename,90,threshold)
 					#print(answer_figure.name,result)
 					if result == True:
 						passed.append(answer_figure)
@@ -156,6 +174,7 @@ class Agent:
 			numBL = len(problem.figures["H"].objects.keys())
 
 			if numTR == numTL and numBL == numTL:
+				print("Num equal removal triggered")
 				objectCount = numTR
 
 				passed = list()
@@ -168,6 +187,8 @@ class Agent:
 		
 			# Eliminate based on num count
 			elif numTR >= numTL and numBL >= numTL:
+				print("Num > removal triggered")
+				
 				minObjects = max([numTL,numTR,numBL])
 
 				#print(minObjects)
@@ -257,7 +278,7 @@ class Agent:
 				best_pairs = pairs
 				best_pairMap = pairMap
 				best = sum
-			#print(answer_figure.name,sum)
+			print(answer_figure.name,sum)
 		if best != 0:
 			self.log(True,"End of main:","True answer never found: " + str(best))
 			#print("Answer: " + answer)

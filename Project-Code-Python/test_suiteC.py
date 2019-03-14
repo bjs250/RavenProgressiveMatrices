@@ -34,24 +34,24 @@ class TestUM(unittest.TestCase):
 				self.problemDict[problem.name] = problem
 		#print("=================================")
 
-	"""
 	def testC04(self):
 		print("===================C04")
 		problem = self.problemDict["Basic Problem C-04"]
 		self.assertEqual(8, self.agent.Solve(problem))
+		print()
 
 	def testC06(self):
 		print("===================C06")
 		problem = self.problemDict["Basic Problem C-06"]
 		self.assertEqual(7, self.agent.Solve(problem))
+		print()
 
 	def testC10(self):
 		print("===================C10")
 		problem = self.problemDict["Basic Problem C-10"]
 		self.assertEqual(7, self.agent.Solve(problem))
-	"""
-
-	"""
+		print()
+	
 	def testC02(self):
 		print("===================C02")
 		problem = self.problemDict["Basic Problem C-02"]
@@ -103,31 +103,26 @@ class TestUM(unittest.TestCase):
 		objects3 = problem.figures["4"].objects
 		for key,value in objects3.items():
 			print(key,value.attributes)
-	"""
-
-	"""
+		print()
+	
 	def testC03(self):
 		print("===================C03")
 		problem = self.problemDict["Basic Problem C-03"]
 		self.assertEqual(4, self.agent.Solve(problem))
 		print()
-		
 	
 	def testC05(self):
 		print("===================C05")
 		problem = self.problemDict["Basic Problem C-05"]
 		self.assertEqual(3, self.agent.Solve(problem))
 		print()
-	"""
-
-	"""
+	
 	def testC09(self):
 		print("===================C09")
 		problem = self.problemDict["Basic Problem C-09"]
 		self.assertEqual(2, self.agent.Solve(problem))
-	"""
-
-	"""
+		print()
+	
 	def testC11(self):
 		print("===================C11")
 		problem = self.problemDict["Basic Problem C-11"]
@@ -138,12 +133,19 @@ class TestUM(unittest.TestCase):
 		print("===================C12")
 		problem = self.problemDict["Basic Problem C-12"]
 		self.assertEqual(8, self.agent.Solve(problem))
-	"""
+		print()	
 
 	def testC07(self):
 		print("===================C07")
 		problem = self.problemDict["Basic Problem C-07"]
 		self.assertEqual(2, self.agent.Solve(problem))
+		print()
+
+	def testC08(self):
+		print("===================C08")
+		problem = self.problemDict["Basic Problem C-08"]
+		self.assertEqual(5, self.agent.Solve(problem))
+		print()
 
 	def tearDown(self):
 		pass

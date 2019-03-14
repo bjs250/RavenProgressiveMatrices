@@ -32,8 +32,11 @@ class TestUM(unittest.TestCase):
 		for set in self.sets:
 			for problem in set.problems: 
 				self.problemDict[problem.name] = problem
+
+		closeness_threshold = 0.7
 		#print("=================================")
 
+	"""
 	def testIdentity(self):
 		print("Testing image identity transform B-01 AB")
 		problem = self.problemDict["Basic Problem B-01"]
@@ -78,7 +81,7 @@ class TestUM(unittest.TestCase):
 		self.assertEqual(result,False)
 
 		print()
-
+	
 	def testRotation(self):
 		print("Testing image rotation transform")
 		problem = self.problemDict["Basic Problem B-04"]
@@ -176,6 +179,43 @@ class TestUM(unittest.TestCase):
 		problem = self.problemDict["Basic Problem C-12"]
 		result = image_processing.checkAddition(problem.figures["B"].visualFilename,problem.figures["D"].visualFilename,problem.figures["E"].visualFilename)
 		self.assertEqual(result,True)
+	
+	def testComputeDPR(self):
+		print("Testing DPR on C-02")
+		problem = self.problemDict["Basic Problem C-02"]
+		DPRA = image_processing.computeDPR(problem.figures["A"].visualFilename)
+		DPRB = image_processing.computeDPR(problem.figures["B"].visualFilename)
+		DPRC = image_processing.computeDPR(problem.figures["C"].visualFilename)
+		DPRD = image_processing.computeDPR(problem.figures["D"].visualFilename)
+		DPRE = image_processing.computeDPR(problem.figures["E"].visualFilename)
+		DPRF = image_processing.computeDPR(problem.figures["F"].visualFilename)
+		DPRG = image_processing.computeDPR(problem.figures["G"].visualFilename)
+		DPRH = image_processing.computeDPR(problem.figures["H"].visualFilename)
+		
+		print(DPRA,DPRB,DPRC)
+		print(DPRD,DPRE,DPRF)
+		print(DPRG,DPRH)
+
+		DPR1 = image_processing.computeDPR(problem.figures["1"].visualFilename)
+		DPR2 = image_processing.computeDPR(problem.figures["2"].visualFilename)
+		DPR3 = image_processing.computeDPR(problem.figures["3"].visualFilename)
+		DPR4 = image_processing.computeDPR(problem.figures["4"].visualFilename)
+		DPR5 = image_processing.computeDPR(problem.figures["5"].visualFilename)
+		DPR6 = image_processing.computeDPR(problem.figures["6"].visualFilename)
+		DPR7 = image_processing.computeDPR(problem.figures["7"].visualFilename)
+		DPR8 = image_processing.computeDPR(problem.figures["8"].visualFilename)
+		
+		print(DPR1,DPR2,DPR3)
+		print(DPR4,DPR5,DPR6)
+		print(DPR7,DPR8)
+	"""
+
+	def test1(self):
+		print("check")
+		problem = self.problemDict["Basic Problem C-02"]
+		selfcheck = image_processing.checkRotation(problem.figures["G"].visualFilename,problem.figures["G"].visualFilename,90,0.1)
+		
+
 
 	def tearDown(self):
 		pass
