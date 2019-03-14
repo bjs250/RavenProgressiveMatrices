@@ -34,78 +34,7 @@ class TestUM(unittest.TestCase):
 				self.problemDict[problem.name] = problem
 		#print("=================================")
 
-	def test3x3symmetryC04(self):
-		print("Testing 3x3 G/C check C-04")
-		problem = self.problemDict["Basic Problem C-04"]
-		result = image_processing.checkRotation(problem.figures["G"].visualFilename,problem.figures["C"].visualFilename,90)
-		self.assertEqual(result,True)
-
-		result = image_processing.checkRotation(problem.figures["2"].visualFilename,problem.figures["2"].visualFilename,90)
-		self.assertEqual(result,False)
-		result = image_processing.checkRotation(problem.figures["4"].visualFilename,problem.figures["4"].visualFilename,90)
-		self.assertEqual(result,False)
-		result = image_processing.checkRotation(problem.figures["5"].visualFilename,problem.figures["5"].visualFilename,90)
-		self.assertEqual(result,False)
-		result = image_processing.checkRotation(problem.figures["6"].visualFilename,problem.figures["6"].visualFilename,90)
-		self.assertEqual(result,False)
-		result = image_processing.checkRotation(problem.figures["7"].visualFilename,problem.figures["7"].visualFilename,90)
-		self.assertEqual(result,False)
-
-		result = image_processing.checkRotation(problem.figures["1"].visualFilename,problem.figures["1"].visualFilename,90)
-		self.assertEqual(result,True)
-		result = image_processing.checkRotation(problem.figures["3"].visualFilename,problem.figures["3"].visualFilename,90)
-		self.assertEqual(result,True)
-		result = image_processing.checkRotation(problem.figures["8"].visualFilename,problem.figures["8"].visualFilename,90)
-		self.assertEqual(result,True)
-		
-	def test3x3symmetryC06(self):
-		print("Testing 3x3 G/C check C-06")
-		problem = self.problemDict["Basic Problem C-06"]
-		result = image_processing.checkRotation(problem.figures["G"].visualFilename,problem.figures["C"].visualFilename,90)
-		self.assertEqual(result,True)
-
-		result = image_processing.checkRotation(problem.figures["1"].visualFilename,problem.figures["1"].visualFilename,90)
-		self.assertEqual(result,False)
-		result = image_processing.checkRotation(problem.figures["2"].visualFilename,problem.figures["2"].visualFilename,90)
-		self.assertEqual(result,False)
-		result = image_processing.checkRotation(problem.figures["3"].visualFilename,problem.figures["3"].visualFilename,90)
-		self.assertEqual(result,False)
-		result = image_processing.checkRotation(problem.figures["5"].visualFilename,problem.figures["5"].visualFilename,90)
-		self.assertEqual(result,False)
-		result = image_processing.checkRotation(problem.figures["8"].visualFilename,problem.figures["8"].visualFilename,90)
-		self.assertEqual(result,False)
-
-		result = image_processing.checkRotation(problem.figures["4"].visualFilename,problem.figures["4"].visualFilename,90)
-		self.assertEqual(result,True)
-		result = image_processing.checkRotation(problem.figures["6"].visualFilename,problem.figures["6"].visualFilename,90)
-		self.assertEqual(result,True)
-		result = image_processing.checkRotation(problem.figures["7"].visualFilename,problem.figures["7"].visualFilename,90)
-		self.assertEqual(result,True)
-
-	def test3x3symmetryC10(self):
-		print("Testing 3x3 G/C check C-10")
-		problem = self.problemDict["Basic Problem C-10"]
-		result = image_processing.checkRotation(problem.figures["G"].visualFilename,problem.figures["C"].visualFilename,90)
-		self.assertEqual(result,True)
-
-		result = image_processing.checkRotation(problem.figures["1"].visualFilename,problem.figures["1"].visualFilename,90)
-		self.assertEqual(result,False)
-		result = image_processing.checkRotation(problem.figures["2"].visualFilename,problem.figures["2"].visualFilename,90)
-		self.assertEqual(result,False)
-		result = image_processing.checkRotation(problem.figures["3"].visualFilename,problem.figures["3"].visualFilename,90)
-		self.assertEqual(result,False)
-		result = image_processing.checkRotation(problem.figures["4"].visualFilename,problem.figures["4"].visualFilename,90)
-		self.assertEqual(result,False)
-		result = image_processing.checkRotation(problem.figures["6"].visualFilename,problem.figures["6"].visualFilename,90)
-		self.assertEqual(result,False)
-		result = image_processing.checkRotation(problem.figures["8"].visualFilename,problem.figures["8"].visualFilename,90)
-		self.assertEqual(result,False)
-
-		result = image_processing.checkRotation(problem.figures["5"].visualFilename,problem.figures["5"].visualFilename,90)
-		self.assertEqual(result,True)
-		result = image_processing.checkRotation(problem.figures["7"].visualFilename,problem.figures["7"].visualFilename,90)
-		self.assertEqual(result,True)
-
+	"""
 	def testC04(self):
 		print("===================C04")
 		problem = self.problemDict["Basic Problem C-04"]
@@ -120,6 +49,7 @@ class TestUM(unittest.TestCase):
 		print("===================C10")
 		problem = self.problemDict["Basic Problem C-10"]
 		self.assertEqual(7, self.agent.Solve(problem))
+	"""
 
 	"""
 	def testC02(self):
@@ -175,19 +105,45 @@ class TestUM(unittest.TestCase):
 			print(key,value.attributes)
 	"""
 
-	
+	"""
 	def testC03(self):
 		print("===================C03")
 		problem = self.problemDict["Basic Problem C-03"]
 		self.assertEqual(4, self.agent.Solve(problem))
-
+		print()
 		
 	
 	def testC05(self):
 		print("===================C05")
 		problem = self.problemDict["Basic Problem C-05"]
 		self.assertEqual(3, self.agent.Solve(problem))
-	
+		print()
+	"""
+
+	"""
+	def testC09(self):
+		print("===================C09")
+		problem = self.problemDict["Basic Problem C-09"]
+		self.assertEqual(2, self.agent.Solve(problem))
+	"""
+
+	"""
+	def testC11(self):
+		print("===================C11")
+		problem = self.problemDict["Basic Problem C-11"]
+		self.assertEqual(4, self.agent.Solve(problem))
+		print()
+
+	def testC12(self):
+		print("===================C12")
+		problem = self.problemDict["Basic Problem C-12"]
+		self.assertEqual(8, self.agent.Solve(problem))
+	"""
+
+	def testC07(self):
+		print("===================C07")
+		problem = self.problemDict["Basic Problem C-07"]
+		self.assertEqual(2, self.agent.Solve(problem))
 
 	def tearDown(self):
 		pass

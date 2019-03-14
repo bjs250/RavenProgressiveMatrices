@@ -6,12 +6,14 @@ from PIL import Image
 import numpy as np
 from matplotlib import pyplot as plt
 
+closeness_threshold = 0.07
+
 def load_image_from_filename(infilename):
     x = Image.open(infilename,"r")
     x = x.convert('L')
     y = np.asarray(x.getdata(),dtype=np.float64).reshape((x.size[1],x.size[0]))
     y = np.asarray(y,dtype=np.uint16)
-    x.close()
+    x.close() 
     return y
 
 def image_to_array(x):
@@ -26,23 +28,56 @@ def save_image( npdata, outfilename ) :
 
 def computeTversky(imageA,imageB):
     
-    sum = imageA + imageB
-    both_black = np.count_nonzero(sum == 510)
-    both_white = np.count_nonzero(sum == 0)
-    AandB = both_black + both_white
+    #sum = imageA + imageB
+    #both_black = np.count_nonzero(sum == 510)
+    #both_white = np.count_nonzero(sum == 0)
+    #AandB = both_black + both_white
 
-    diffAB = imageA - imageB
+    """
+    diffAB = XOR(imageA,imageB)#imageA - imageB
     AnotB = np.count_nonzero(diffAB != 0)
-    diffBA = imageB - imageA
+    diffBA = XOR(imageB,imageA)#imageB - imageA
     BnotA = np.count_nonzero(diffBA != 0)
+    """
+
+    AnotB,BnotA,AandB = diffs(imageA,imageB)
 
     alpha = 0.5
     beta = 0.5
     Tversky = AandB / (AandB + alpha * AnotB + beta * BnotA)
-    #print(AandB,AnotB,BnotA,Tversky)
+    print(AandB,AnotB,BnotA,AandB+AnotB+BnotA,Tversky,1.0-Tversky)
 
     return Tversky
-    
+
+def XOR(arr1,arr2):
+    out = np.zeros((arr1.shape[0],arr1.shape[1]))
+    for row in range(arr1.shape[0]):
+        for col in range(arr1.shape[1]):
+            if arr1[row][col] == 255 and arr2[row][col] == 255:
+                out[row][col] = 255
+            elif arr1[row][col] == 0 and arr2[row][col] == 255:
+                out[row][col] = 0
+            elif arr1[row][col] == 0 and arr2[row][col] == 0:
+                out[row][col] = 255
+            elif arr1[row][col] == 255 and arr2[row][col] == 0:
+                out[row][col] = 255
+    return out
+
+def diffs(arr1,arr2):
+    AnotB = 0
+    BnotA = 0
+    AandB = 0
+    for row in range(arr1.shape[0]):
+        for col in range(arr1.shape[1]):
+            if arr1[row][col] == 0 and arr2[row][col] == 255:
+                AnotB +=1
+            elif arr1[row][col] == 255 and arr2[row][col] == 0:
+                BnotA +=1
+            elif arr1[row][col] == 0 and arr2[row][col] == 0:
+                AandB += 1
+    return (AnotB,BnotA,AandB)
+
+
 def checkIdentity(inputFilename, outputFilename):
     inputImage = load_image_from_filename(inputFilename)
     outputImage = load_image_from_filename(outputFilename)
@@ -50,9 +85,20 @@ def checkIdentity(inputFilename, outputFilename):
     Tversky = computeTversky(inputImage,outputImage)
 
     closeness = np.abs(Tversky-1.0)
+    print(closeness,closeness_threshold)
+
+    if closeness < closeness_threshold:
+        return True
+    else:
+        return False
+
+def checkIdentityArrays(input, output):
+    Tversky = computeTversky(input,output)
+
+    closeness = np.abs(Tversky-1.0)
     #print(closeness)
 
-    if closeness < .05:
+    if closeness < closeness_threshold:
         return True
     else:
         return False
@@ -84,7 +130,7 @@ def checkRotation(inputFilename,outputFilename,angle):
     fff.close()
     im.close()
 
-    if closeness < .07:
+    if closeness < closeness_threshold:
         return True
     else:
         return False
@@ -95,6 +141,8 @@ def checkReflection(inputFilename, outputFilename, direction):
         im = im.transpose(Image.FLIP_LEFT_RIGHT)
     elif direction == "top_bottom":
         im = im.transpose(Image.FLIP_TOP_BOTTOM)
+    elif direction == "double":
+        im = im.transpose(Image.FLIP_TOP_BOTTOM).transpose(Image.FLIP_LEFT_RIGHT )
     #im.show()
 
     im = im.convert('L')
@@ -109,14 +157,40 @@ def checkReflection(inputFilename, outputFilename, direction):
 
     im.close()
 
-    if closeness < .07:
+    if closeness < closeness_threshold:
         return True
     else:
         return False
-    
 
-
-
+# Check if an image is the sum of two other images
+def checkAddition(inputFilename1, inputFilename2, outputFilename):
+    if 1:
+        #im1 = Image.open(inputFilename1)
+        #im1.show()
+        #im2 = Image.open(inputFilename2)
+        #im2.show()
+        #im3 = Image.open(outputFilename)
+        #im3.show()
+        pass
+        
+    in1 = load_image_from_filename(inputFilename1)
+    in2 = load_image_from_filename(inputFilename2)
+    out = load_image_from_filename(outputFilename)
+    addition = in1 + in2
+    for row in range(addition.shape[0]):
+        for col in range(addition.shape[1]):
+            # w + w
+            if addition[row][col] == 510:
+                addition[row][col] = 255
+            # b + w or w + b
+            elif addition[row][col] == 255:
+                addition[row][col] = 0
+            elif addition[row][col] == 0:
+                addition[row][col] = 0
+    plt.show()
+    result = checkIdentityArrays(addition,out)
+    print(result)
+    return result
 
 
 

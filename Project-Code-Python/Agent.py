@@ -40,6 +40,8 @@ class Agent:
 		debug = False
 		self.log(True, "Problem name", problem.name)
 
+		answer_figures = [problem.figures[key] for key in problem.figures.keys() if key.isalpha() == False]
+
 		if problem.problemType == "2x2":
 			# Get objects, hardcoded 2x2, single object per figure
 			horizontal_pairs = self.pairObjects(problem.figures["A"].objects,problem.figures["B"].objects)
@@ -49,6 +51,26 @@ class Agent:
 			original = copy.deepcopy(problem.figures["A"].objects)
 		
 		elif problem.problemType == "3x3":
+
+			# Graphical hypothesis testing
+
+			# Addition hypothesis
+			additionCheck = image_processing.checkAddition(problem.figures["B"].visualFilename,problem.figures["D"].visualFilename,problem.figures["E"].visualFilename)
+			if additionCheck:
+				for answer_figure in answer_figures:
+					if image_processing.checkAddition(problem.figures["F"].visualFilename,problem.figures["H"].visualFilename,answer_figure.visualFilename):
+						print("addition")
+						return int(answer_figure.name)
+
+			# Clock check
+			reflectionCheck1 = image_processing.checkReflection(problem.figures["B"].visualFilename,problem.figures["H"].visualFilename,"top_bottom")
+			reflectionCheck2 = image_processing.checkReflection(problem.figures["D"].visualFilename,problem.figures["F"].visualFilename,"left_right")
+			if reflectionCheck1 and reflectionCheck2:
+				for answer_figure in answer_figures:
+					if image_processing.checkReflection(problem.figures["A"].visualFilename,answer_figure.visualFilename,"double"):
+						print("clock")
+						return int(answer_figure.name)
+
 			horizontal_pairs = self.pairObjects(problem.figures["E"].objects,problem.figures["F"].objects)
 			vertical_pairs = self.pairObjects(problem.figures["E"].objects,problem.figures["H"].objects)
 			
@@ -90,9 +112,6 @@ class Agent:
 						edit_string = edit_string[:-1]
 						obj.attributes[attr_name] = edit_string
 
-		# Compare prediction to answers
-		answer_figures = [problem.figures[key] for key in problem.figures.keys() if key.isalpha() == False]
-		
 		#Execute smart tester
 		if problem.problemType == "3x3":
 
