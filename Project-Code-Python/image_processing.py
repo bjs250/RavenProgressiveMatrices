@@ -77,7 +77,7 @@ def checkRotation(inputFilename,outputFilename,angle):
     Tversky = computeTversky(inputImage,outputImage)
 
     closeness = np.abs(Tversky-1.0)
-    #print(closeness)
+    #print(inputFilename,outputFilename,closeness)
 
     im2.close()
     rot.close()

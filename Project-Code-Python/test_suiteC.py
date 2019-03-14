@@ -17,7 +17,6 @@ class TestUM(unittest.TestCase):
  
 	def setUp(self):
 		#print("=====Setup===== \n")
-		self.Basic_B_Score = 0
 
 		# taken from RavensProject.py
 		self.sets=[] 
@@ -122,9 +121,13 @@ class TestUM(unittest.TestCase):
 		problem = self.problemDict["Basic Problem C-10"]
 		self.assertEqual(7, self.agent.Solve(problem))
 
+	"""
 	def testC02(self):
 		print("===================C02")
-		
+		problem = self.problemDict["Basic Problem C-02"]
+		self.assertEqual(4, self.agent.Solve(problem))
+
+		print("===================C02")
 		print("Testing object pairing on Problem C02")
 		problem = self.problemDict["Basic Problem C-02"]
 		objects1 = problem.figures["E"].objects
@@ -170,8 +173,21 @@ class TestUM(unittest.TestCase):
 		objects3 = problem.figures["4"].objects
 		for key,value in objects3.items():
 			print(key,value.attributes)
-	
+	"""
 
+	
+	def testC03(self):
+		print("===================C03")
+		problem = self.problemDict["Basic Problem C-03"]
+		self.assertEqual(4, self.agent.Solve(problem))
+
+		
+	
+	def testC05(self):
+		print("===================C05")
+		problem = self.problemDict["Basic Problem C-05"]
+		self.assertEqual(3, self.agent.Solve(problem))
+	
 
 	def tearDown(self):
 		pass

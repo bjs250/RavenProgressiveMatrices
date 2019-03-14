@@ -95,9 +95,15 @@ class Agent:
 		
 		#Execute smart tester
 		if problem.problemType == "3x3":
+
+			# Rotation Symmetry Test
 			check = image_processing.checkRotation(problem.figures["G"].visualFilename,problem.figures["C"].visualFilename,90)
 			selfcheck = image_processing.checkRotation(problem.figures["G"].visualFilename,problem.figures["G"].visualFilename,90)
-			if check and not selfcheck:
+			check2 = image_processing.checkRotation(problem.figures["H"].visualFilename,problem.figures["F"].visualFilename,90)
+			selfcheck2 = image_processing.checkRotation(problem.figures["H"].visualFilename,problem.figures["H"].visualFilename,90)
+			
+			#print(check,selfcheck)
+			if check and not selfcheck or (check2 and not selfcheck2):
 				
 				passed = list()
 				
@@ -123,6 +129,63 @@ class Agent:
 				
 				answer_figures = final_passed
 
+			# Check if num count stays the same
+			objectCounts = list()
+			minObjects = 0
+			numTL = len(problem.figures["E"].objects.keys())
+			numTR = len(problem.figures["F"].objects.keys())
+			numBL = len(problem.figures["H"].objects.keys())
+
+			if numTR == numTL and numBL == numTL:
+				objectCount = numTR
+
+				passed = list()
+				for answer_figure in answer_figures:
+					num = len(answer_figure.objects.keys())
+					#print(answer_figure.name,num)
+					if num == objectCount:
+						passed.append(answer_figure)	
+				answer_figures = passed
+		
+			# Eliminate based on num count
+			elif numTR >= numTL and numBL >= numTL:
+				minObjects = max([numTL,numTR,numBL])
+
+				#print(minObjects)
+				passed = list()
+				for answer_figure in answer_figures:
+					num = len(answer_figure.objects.keys())
+					#print(answer_figure.name,num)
+					if num >= minObjects:
+						passed.append(answer_figure)
+				answer_figures = passed
+			
+			# Try the addition trick
+			numA = len(problem.figures["A"].objects.keys())
+			numB = len(problem.figures["B"].objects.keys())
+			numC = len(problem.figures["C"].objects.keys())
+			
+			numD = len(problem.figures["D"].objects.keys())
+			numE = len(problem.figures["E"].objects.keys())
+			numF = len(problem.figures["F"].objects.keys())
+
+			#print(numA,numB,numC,numD,numE,numF)
+			
+			if numC == numB + (numB - numA) and numF == numE + (numE - numD):
+				numG = len(problem.figures["G"].objects.keys())
+				numH = len(problem.figures["H"].objects.keys())
+				numTarget = numH + (numH-numG)
+				#print(numG,numH,numTarget)
+				
+				passed = list()
+				for answer_figure in answer_figures:
+					num = len(answer_figure.objects.keys())
+					#print(answer_figure.name,num)
+					if num == numTarget:
+						passed.append(answer_figure)	
+				answer_figures = passed
+
+			#print("-----")
 			#print("remaining answers:")
 
 			#for answer_figure in answer_figures:
@@ -175,7 +238,7 @@ class Agent:
 				best_pairs = pairs
 				best_pairMap = pairMap
 				best = sum
-			print(answer_figure.name,sum)
+			#print(answer_figure.name,sum)
 		if best != 0:
 			self.log(True,"End of main:","True answer never found: " + str(best))
 			#print("Answer: " + answer)
