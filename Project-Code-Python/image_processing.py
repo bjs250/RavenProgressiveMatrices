@@ -4,10 +4,10 @@ import csv
 
 from PIL import Image
 import numpy as np
-from matplotlib import pyplot as plt
+#from matplotlib import pyplot as plt
 
 DP_threshold = 0.01
-IP_threshold = 0.75
+IP_threshold = 0.77
 
 def load_image_from_filename(infilename):
     x = Image.open(infilename,"r")
@@ -27,13 +27,20 @@ def save_image( npdata, outfilename ) :
     img.save( outfilename )
     img.close()
 
-def computeDP(inputFilename, flag):
-    img = load_image_from_filename(inputFilename)
+def computeDP(input, flag):
+    if flag == "filename":
+        img = load_image_from_filename(input)
+    elif flag == "image":
+        img = input
     return np.count_nonzero(img == 0)/(img.shape[0]*img.shape[1])
 
-def computeIP(inputFilenameA,inputFilenameB):
-    imgA = load_image_from_filename(inputFilenameA)
-    imgB = load_image_from_filename(inputFilenameB)
+def computeIP(inputA,inputB, flag):
+    if flag == "filename":
+        imgA = load_image_from_filename(inputA)
+        imgB = load_image_from_filename(inputB)
+    elif flag == "image":
+        imgA = inputA
+        imgB = inputB
     maskA = imgA == 0 # black in 1
     maskB = imgB == 0 # black in 2
     AandB = np.count_nonzero(np.bitwise_and(maskA,maskB))
@@ -42,22 +49,33 @@ def computeIP(inputFilenameA,inputFilenameB):
 
     return IP
 
-def checkIdentity(inputFilenameA, inputFilenameB):
-    DP_A = computeDP(inputFilenameA)
-    DP_B = computeDP(inputFilenameB)
-    IP_AB = computeIP(inputFilenameA,inputFilenameB)
+def checkIdentity(inputFilenameA, inputFilenameB,flag):
+    DP_A = computeDP(inputFilenameA,flag)
+    DP_B = computeDP(inputFilenameB,flag)
+    IP_AB = computeIP(inputFilenameA,inputFilenameB,flag)
     DP_AB = np.abs(DP_A - DP_B)
 
     #print(DP_A,DP_B,DP_AB,IP_AB)
     print(DP_AB,IP_AB)
 
-    if DP_AB < DP_threshold and IP_AB > IP_threshold:
+    if (DP_AB < DP_threshold and IP_AB > IP_threshold) or (DP_AB < DP_threshold*2 and IP_AB > .95):
         return True
     else:
         return False
 
-def checkRotation(inputFilename,outputFilename,angle, closeness_threshold):
-    orig_im = Image.open(inputFilename)
+def computeIdentity(inputFilenameA, inputFilenameB,flag):
+    DP_A = computeDP(inputFilenameA,flag)
+    DP_B = computeDP(inputFilenameB,flag)
+    IP_AB = computeIP(inputFilenameA,inputFilenameB,flag)
+    DP_AB = np.abs(DP_A - DP_B)
+
+    #print(DP_A,DP_B,DP_AB,IP_AB)
+    #print(DP_AB,IP_AB)
+
+    return (DP_AB,IP_AB)
+
+def checkRotation(inputA,inputB,angle):
+    orig_im = Image.open(inputA)
     
     im2 = orig_im.convert('RGBA')
     rot = im2.rotate(angle)
@@ -70,27 +88,20 @@ def checkRotation(inputFilename,outputFilename,angle, closeness_threshold):
     
     im = im.convert('L')
 
-    inputImage = image_to_array(im)
-    outputImage = load_image_from_filename(outputFilename)
+    imgA = image_to_array(im)
+    imgB = load_image_from_filename(inputB)
 
-    #print(inputFilename)
-    Tversky = computeTversky(inputImage,outputImage)
-
-    closeness = np.abs(Tversky-1.0)
-    #print(inputFilename,outputFilename,closeness)
+    result = checkIdentity(imgA,imgB,"image")
 
     im2.close()
     rot.close()
     fff.close()
     im.close()
 
-    if closeness < closeness_threshold:
-        return True
-    else:
-        return False
+    return result
 
 def checkReflection(inputFilenameA, inputFilenameB, direction):
-    imgA = Image.open(inputFilename)
+    imgA = Image.open(inputFilenameA)
     if direction == "left_right":
         imgA = imgA.transpose(Image.FLIP_LEFT_RIGHT)
     elif direction == "top_bottom":
@@ -100,23 +111,15 @@ def checkReflection(inputFilenameA, inputFilenameB, direction):
 
     imgA = imgA.convert('L')
 
-    inputImage = image_to_array(im)
-    outputImage = load_image_from_filename(outputFilename)
+    inputImageA = image_to_array(imgA)
+    inputImageB = load_image_from_filename(inputFilenameB)
 
-    Tversky = computeTversky(inputImage,outputImage)
+    result = checkIdentity(inputImageA,inputImageB,"image")
 
-    closeness = np.abs(Tversky-1.0)
-    #print(closeness)
-
-    im.close()
-
-    if closeness < closeness_threshold:
-        return (True,Tversky)
-    else:
-        return (False,Tversky)
+    return result
 
 # Check if an image is the sum of two other images
-def checkAddition(inputFilename1, inputFilename2, outputFilename):
+def checkAddition(inputA, inputB, inputC, returnFlag):
     if 1:
         #im1 = Image.open(inputFilename1)
         #im1.show()
@@ -126,24 +129,39 @@ def checkAddition(inputFilename1, inputFilename2, outputFilename):
         #im3.show()
         pass
         
-    in1 = load_image_from_filename(inputFilename1)
-    in2 = load_image_from_filename(inputFilename2)
-    out = load_image_from_filename(outputFilename)
-    addition = in1 + in2
-    for row in range(addition.shape[0]):
-        for col in range(addition.shape[1]):
-            # w + w
-            if addition[row][col] == 510:
-                addition[row][col] = 255
-            # b + w or w + b
-            elif addition[row][col] == 255:
-                addition[row][col] = 0
-            elif addition[row][col] == 0:
-                addition[row][col] = 0
-    plt.show()
-    result = checkIdentityArrays(addition,out)
+    imgA = load_image_from_filename(inputA)
+    imgB = load_image_from_filename(inputB)
+    imgC = load_image_from_filename(inputC)
+
+    maskA = imgA == 0 # black in 1
+    maskB = imgB == 0 # black in 2
+    AorB = np.bitwise_or(maskA,maskB) # w = False, b = True
+    addition = (AorB == 0) * 255
+    #print(addition)
+
+    # addition2 = imgA + imgB
+    
+    # for row in range(addition2.shape[0]):
+    #     for col in range(addition2.shape[1]):
+    #         # w + w
+    #         if addition2[row][col] == 510:
+    #             addition2[row][col] = 255
+    #         # b + w or w + b
+    #         elif addition2[row][col] == 255:
+    #             addition2[row][col] = 0
+    #         elif addition2[row][col] == 0:
+    #             addition2[row][col] = 0
+    
+    #print(addition == addition2)
+    #plt.show()
     #print(result)
-    return result
+
+    if returnFlag == "check":
+        result = checkIdentity(addition,imgC,"image")
+        return result
+    else:
+        DP,IP = result = computeIdentity(addition,imgC,"image")
+        return (DP,IP)
 
 
 
@@ -155,7 +173,7 @@ def checkAddition(inputFilename1, inputFilename2, outputFilename):
 
 
 
-
+"""
 # Given two angles, determine whether a vertical or horizontal reflection occurs
 def guessRelection(angles):
     start_angle = int(angles[0])
@@ -215,4 +233,4 @@ def performReflection(current_angle,reflection_type):
 
 if __name__ == "__main__":
     pass
-    
+"""

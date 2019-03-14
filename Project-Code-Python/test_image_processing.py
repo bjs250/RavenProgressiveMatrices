@@ -174,12 +174,13 @@ class TestUM(unittest.TestCase):
 		self.assertEqual(result,True)
 		print()
 
+	"""
 	def testAddition(self):
 		print("Testing Addition on C-12")
 		problem = self.problemDict["Basic Problem C-12"]
-		result = image_processing.checkAddition(problem.figures["B"].visualFilename,problem.figures["D"].visualFilename,problem.figures["E"].visualFilename)
+		result = image_processing.checkAddition(problem.figures["B"].visualFilename,problem.figures["D"].visualFilename,problem.figures["E"].visualFilename,"check")
 		self.assertEqual(result,True)
-	
+	"""
 	def testComputeDPR(self):
 		print("Testing DPR on C-02")
 		problem = self.problemDict["Basic Problem C-02"]
@@ -208,13 +209,13 @@ class TestUM(unittest.TestCase):
 		print(DPR1,DPR2,DPR3)
 		print(DPR4,DPR5,DPR6)
 		print(DPR7,DPR8)
-	"""
+	
 
 	def test1(self):
 		print("check")
 		problem = self.problemDict["Basic Problem C-02"]
 		selfcheck = image_processing.checkRotation(problem.figures["G"].visualFilename,problem.figures["G"].visualFilename,90,0.1)
-		
+	"""	
 
 
 	def tearDown(self):

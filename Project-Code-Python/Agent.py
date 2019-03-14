@@ -51,69 +51,174 @@ class Agent:
 			
 			# Objects dictionary from Figure A
 			original = copy.deepcopy(problem.figures["A"].objects)
+			return -1
 		
 		elif problem.problemType == "3x3":
+			if "Challenge" in problem.name:
+				return -1
 
 			# Execute graphical hypothesis testing
 
-			# 1) Positive: Identity
-			identityAB = image_processing.checkIdentity(problem.figures["A"].visualFilename,problem.figures["B"].visualFilename)
-			identityBC = image_processing.checkIdentity(problem.figures["B"].visualFilename,problem.figures["C"].visualFilename)
-			#print(identityAB,identityBC)
+			# 1) Positive: Identity (C01)
+			identityAB = image_processing.checkIdentity(problem.figures["A"].visualFilename,problem.figures["B"].visualFilename,"filename")
+			identityBC = image_processing.checkIdentity(problem.figures["B"].visualFilename,problem.figures["C"].visualFilename,"filename")
+			print("idenAB,BC:",identityAB,identityBC)
 			if identityAB and identityBC:
 				for answer_figure in answer_figures:
-					identityHAns = image_processing.checkIdentity(problem.figures["H"].visualFilename,answer_figure.visualFilename)
-					#print(identityHAns)
+					identityHAns = image_processing.checkIdentity(problem.figures["H"].visualFilename,answer_figure.visualFilename,"filename")
+					print(answer_figure.name, identityHAns)
 					if identityHAns:
-						print("#1 Identity")
+						print("#1 Identity", answer_figure.name)
 						return int(answer_figure.name)
 
-			# 2) Positive: Clock
+			# 2) Positive: Clock (C07)
 			reflectionCheckBH = image_processing.checkReflection(problem.figures["B"].visualFilename,problem.figures["H"].visualFilename,"top_bottom")
 			reflectionCheckDF = image_processing.checkReflection(problem.figures["D"].visualFilename,problem.figures["F"].visualFilename,"left_right")
 			if reflectionCheckBH and reflectionCheckDF:
 				for answer_figure in answer_figures:
 					reflectionCheckAAns = image_processing.checkReflection(problem.figures["A"].visualFilename,answer_figure.visualFilename,"double")
 					if reflectionCheckAAns:
-						print("#2 Clock")
+						print("#2 Clock", answer_figure.name)
 						return int(answer_figure.name)
+
+			# 3) Positive: Addition (C12, C05)
+			additionCheckBDE = image_processing.checkAddition(problem.figures["B"].visualFilename,problem.figures["D"].visualFilename,problem.figures["E"].visualFilename, "check")
+			print("additioncheckBDE: ",additionCheckBDE)
+			if additionCheckBDE:
+				maxIP = 0
+				for answer_figure in answer_figures:
+					DPAns,IPAns = image_processing.checkAddition(problem.figures["F"].visualFilename,problem.figures["H"].visualFilename,answer_figure.visualFilename,"compute")
+					if IPAns > maxIP:
+						maxIP = IPAns
+						ans = answer_figure.name
+					print(answer_figure.name,DPAns,IPAns)
+				print("#3 Addition", answer_figure.name,maxIP)
+				return int(ans)
+
+			# 5) Negative: Rotation Trick (C4,C6,C10)
+			check = image_processing.checkRotation(problem.figures["G"].visualFilename,problem.figures["C"].visualFilename,90)
+			selfcheck = image_processing.checkRotation(problem.figures["G"].visualFilename,problem.figures["G"].visualFilename,90)
 			
-			# 3) Positive: Addition
-			additionCheckBDE = image_processing.checkAddition(problem.figures["B"].visualFilename,problem.figures["D"].visualFilename,problem.figures["E"].visualFilename)
-			print(additionCheckBDE)
-			#if additionCheck:
-			#	for answer_figure in answer_figures:
-			#		if image_processing.checkAddition(problem.figures["F"].visualFilename,problem.figures["H"].visualFilename,answer_figure.visualFilename):
-			#			print("addition")
-			#			return int(answer_figure.name)
-			
+			#print(check,selfcheck)
+			if check and not selfcheck:
+				
+				passed = list()
+				print("Rotation removal triggered")
+				
+				# Do the rotation check
+				for answer_figure in answer_figures:
+					result = image_processing.checkRotation(answer_figure.visualFilename,answer_figure.visualFilename,90)
+					print(answer_figure.name,result)
+					if result == True:
+						passed.append(answer_figure)
+
+				answer_figures = passed
+
+				# Check if answer already appears
+				final_passed = list()
+				question_figures = [problem.figures[key] for key in problem.figures.keys() if key.isalpha() == True]
+				for index,answer_figure in enumerate(passed):
+					falseCount = 0
+					for question_figure in question_figures:
+						result = image_processing.checkIdentity(answer_figure.visualFilename,question_figure.visualFilename,"filename")
+						#print(question_figure.name,answer_figure.name,result, falseCount)
+						if result == False:
+							falseCount += 1
+							if falseCount == 8:
+								final_passed.append(answer_figure)
+				
+				answer_figures = final_passed
+
+				print("Remaining:")
+				for answer_figure in answer_figures:
+					print(answer_figure.name)
+
+				if len(answer_figures) == 1:
+					print("#5 Rotation")
+					return int(answer_figures[0].name)
+
 			# 4) Negative: Connected Components number removal
-			#connectedComponents.connectedComponents(problem.figures["E"].visualFilename)
-			#connectedComponents.connectedComponents(problem.figures["F"].visualFilename)
-			#connectedComponents.connectedComponents(problem.figures["H"].visualFilename)
+			numA = connectedComponents.computeComponents(problem.figures["A"].visualFilename)
+			numB = connectedComponents.computeComponents(problem.figures["B"].visualFilename)
+			numC = connectedComponents.computeComponents(problem.figures["C"].visualFilename)
+			numD = connectedComponents.computeComponents(problem.figures["D"].visualFilename)
+			numG = connectedComponents.computeComponents(problem.figures["G"].visualFilename)
+			numE = connectedComponents.computeComponents(problem.figures["E"].visualFilename)
+			numF = connectedComponents.computeComponents(problem.figures["F"].visualFilename)
+			numH = connectedComponents.computeComponents(problem.figures["H"].visualFilename)
+			numDict = {}
+			for answer_figure in answer_figures:
+				numDict[answer_figure.name] = connectedComponents.computeComponents(answer_figure.visualFilename)
+		
+			# Check if num count stays the same
+			objectCounts = list()
+			minObjects = 0
+			
+			if numF == numE and numH == numE:
+				print("Num Count Equal Removal")
+				objectCount = numE
+
+				passed = list()
+				for answer_figure in answer_figures:
+					numAns = numDict[answer_figure.name]
+					print(answer_figure.name,numAns)
+					if numAns == objectCount:
+						passed.append(answer_figure)	
+				answer_figures = passed
+
+				if len(answer_figures) == 1:
+					print("Num #4")
+					return int(answer_figures[0].name)
+		
+			"""
+			elif numF >= numE and numH >= numE:
+				print("Num >= removal triggered")
+				
+				minObjects = max([numE,numF,numH])
+
+				#print(minObjects)
+				passed = list()
+				for answer_figure in answer_figures:
+					numAns = numDict[answer_figure.name]
+					print(answer_figure.name,numAns)
+					if numAns >= minObjects:
+						passed.append(answer_figure)
+				answer_figures = passed	
+
+				if len(answer_figures) == 1:
+					print("Num #4")
+					return int(answer_figures[0].name)
 			"""
 
+			print("Remaining:")
+			for answer_figure in answer_figures:
+				print(answer_figure.name)
 
+			#Try the addition trick
+			print("Addition Trick:",numA,numB,numC,numD,numE,numF)
+			
+			if numC == numB + (numB - numA) and numF == numE + (numE - numD):
+				numTarget = numH + (numH-numG)
+				print(numG,numH,numTarget)
+				
+				passed = list()
+				for answer_figure in answer_figures:
+					numAns = numDict[answer_figure.name]
+					#print(answer_figure.name,num)
+					if numAns == numTarget:
+						passed.append(answer_figure)	
+				answer_figures = passed
 
+				if len(answer_figures) == 1:
+					print("Num #4")
+					return int(answer_figures[0].name)
 
+			print("Remaining:")
+			for answer_figure in answer_figures:
+				print(answer_figure.name)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+			return -1
+		"""
 		# 	# Addition hypothesis
 		# 	additionCheck = image_processing.checkAddition(problem.figures["B"].visualFilename,problem.figures["D"].visualFilename,problem.figures["E"].visualFilename)
 		# 	if additionCheck:
@@ -314,8 +419,9 @@ class Agent:
 		# 	#for key,value in best_answer.objects.items():
 		# 	#	print(key,value.attributes)
 		# 	#print(best_pairMap)
+		"""
 
-		return int(answer)
+		#return int(answer)
 
 #=======================================================================================
 
