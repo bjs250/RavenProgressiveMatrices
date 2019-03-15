@@ -34,6 +34,25 @@ class TestUM(unittest.TestCase):
 				self.problemDict[problem.name] = problem
 		#print("=================================")
 
+	def testC01(self):
+		print("===================C01")
+		problem = self.problemDict["Basic Problem C-01"]
+		self.assertEqual(3, self.agent.Solve(problem))
+		print()
+
+	def testC07(self):
+		print("===================C07")
+		problem = self.problemDict["Basic Problem C-07"]
+		self.assertEqual(2, self.agent.Solve(problem))
+		print()
+
+	def testC12(self):
+		print("===================C12")
+		problem = self.problemDict["Basic Problem C-12"]
+		self.assertEqual(8, self.agent.Solve(problem))
+		print()	
+
+	"""
 	def testC04(self):
 		print("===================C04")
 		problem = self.problemDict["Basic Problem C-04"]
@@ -129,23 +148,12 @@ class TestUM(unittest.TestCase):
 		self.assertEqual(4, self.agent.Solve(problem))
 		print()
 
-	def testC12(self):
-		print("===================C12")
-		problem = self.problemDict["Basic Problem C-12"]
-		self.assertEqual(8, self.agent.Solve(problem))
-		print()	
-
-	def testC07(self):
-		print("===================C07")
-		problem = self.problemDict["Basic Problem C-07"]
-		self.assertEqual(2, self.agent.Solve(problem))
-		print()
-
 	def testC08(self):
 		print("===================C08")
 		problem = self.problemDict["Basic Problem C-08"]
 		self.assertEqual(5, self.agent.Solve(problem))
 		print()
+	"""
 
 	def tearDown(self):
 		pass

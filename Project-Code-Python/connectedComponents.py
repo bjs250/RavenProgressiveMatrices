@@ -5,7 +5,7 @@ import csv
 import numpy as np
 import image_processing
 
-def connectedComponents(imageFilename):
+def computeComponents(imageFilename):
     if type(imageFilename) != type(np.ones((1,1))):
         grid = image_processing.load_image_from_filename(imageFilename)
     else:
@@ -42,15 +42,3 @@ def connectedComponents(imageFilename):
     #print(grid)
 
     return counter
-
-def computePixelRatio(grid,num):
-    black = 0
-    for row in range(grid.shape[0]):
-        mincol = 0
-        maxcol = 0
-        col = 0
-        while col < grid.shape[1] and grid[row][col] != num:
-            if grid[row][col] == num:
-                mincol = col
-            col += 1
-        print(mincol) 

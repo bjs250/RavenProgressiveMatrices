@@ -6,7 +6,8 @@ from PIL import Image
 import numpy as np
 from matplotlib import pyplot as plt
 
-closeness_threshold = 0.07
+DP_threshold = 0.01
+IP_threshold = 0.75
 
 def load_image_from_filename(infilename):
     x = Image.open(infilename,"r")
@@ -26,101 +27,31 @@ def save_image( npdata, outfilename ) :
     img.save( outfilename )
     img.close()
 
-def computeTversky(imageA,imageB):
-    
-    #sum = imageA + imageB
-    #both_black = np.count_nonzero(sum == 510)
-    #both_white = np.count_nonzero(sum == 0)
-    #AandB = both_black + both_white
-
-    """
-    diffAB = XOR(imageA,imageB)#imageA - imageB
-    AnotB = np.count_nonzero(diffAB != 0)
-    diffBA = XOR(imageB,imageA)#imageB - imageA
-    BnotA = np.count_nonzero(diffBA != 0)
-    """
-
-    AnotB,BnotA,AandB = diffs(imageA,imageB)
-
-    alpha = 0.5
-    beta = 0.5
-    Tversky = AandB / (AandB + alpha * AnotB + beta * BnotA)
-    #print(AandB,AnotB,BnotA,AandB+AnotB+BnotA,Tversky,1.0-Tversky)
-
-    return Tversky
-
-def XOR(arr1,arr2):
-    out = np.zeros((arr1.shape[0],arr1.shape[1]))
-    for row in range(arr1.shape[0]):
-        for col in range(arr1.shape[1]):
-            if arr1[row][col] == 255 and arr2[row][col] == 255:
-                out[row][col] = 255
-            elif arr1[row][col] == 0 and arr2[row][col] == 255:
-                out[row][col] = 0
-            elif arr1[row][col] == 0 and arr2[row][col] == 0:
-                out[row][col] = 255
-            elif arr1[row][col] == 255 and arr2[row][col] == 0:
-                out[row][col] = 255
-    return out
-
-def diffs(arr1,arr2):
-    AnotB = 0
-    BnotA = 0
-    AandB = 0
-
-    mask1 = (arr1 == 255) #1 = white, 0 = black
-    mask2 = (arr2 == 255)
-    mask3 = (arr1 == 0) #1 = black, 0 = white
-    mask4 = (arr2 == 0)
-    
-    AandB = np.count_nonzero(np.bitwise_and(mask3,mask4)) # both black
-    AnotB = np.count_nonzero(np.bitwise_and(mask1,mask4)) # one white one black
-    BnotA = np.count_nonzero(np.bitwise_and(mask2,mask3)) # one white one black
-    
-    # print("new",AandB,AnotB,BnotA)
-
-    # AnotB = 0
-    # BnotA = 0
-    # AandB = 0
-
-
-    # for row in range(arr1.shape[0]):
-    #     for col in range(arr1.shape[1]):
-    #         if arr1[row][col] == 0 and arr2[row][col] == 255:
-    #             AnotB +=1
-    #         elif arr1[row][col] == 255 and arr2[row][col] == 0:
-    #             BnotA +=1
-    #         elif arr1[row][col] == 0 and arr2[row][col] == 0:
-    #             AandB += 1
-    # print("old",AandB,AnotB,BnotA)
-
-    return (AnotB,BnotA,AandB)
-
-def computeDPR(inputFilename):
+def computeDP(inputFilename, flag):
     img = load_image_from_filename(inputFilename)
     return np.count_nonzero(img == 0)/(img.shape[0]*img.shape[1])
 
-def checkIdentity(inputFilename, outputFilename):
-    inputImage = load_image_from_filename(inputFilename)
-    outputImage = load_image_from_filename(outputFilename)
-    
-    Tversky = computeTversky(inputImage,outputImage)
+def computeIP(inputFilenameA,inputFilenameB):
+    imgA = load_image_from_filename(inputFilenameA)
+    imgB = load_image_from_filename(inputFilenameB)
+    maskA = imgA == 0 # black in 1
+    maskB = imgB == 0 # black in 2
+    AandB = np.count_nonzero(np.bitwise_and(maskA,maskB))
+    AxorB = np.count_nonzero(np.bitwise_xor(maskA,maskB))
+    IP =   AandB / (AandB + AxorB)  
 
-    closeness = np.abs(Tversky-1.0)
-    #print(closeness,closeness_threshold)
+    return IP
 
-    if closeness < closeness_threshold:
-        return True
-    else:
-        return False
+def checkIdentity(inputFilenameA, inputFilenameB):
+    DP_A = computeDP(inputFilenameA)
+    DP_B = computeDP(inputFilenameB)
+    IP_AB = computeIP(inputFilenameA,inputFilenameB)
+    DP_AB = np.abs(DP_A - DP_B)
 
-def checkIdentityArrays(input, output):
-    Tversky = computeTversky(input,output)
+    #print(DP_A,DP_B,DP_AB,IP_AB)
+    print(DP_AB,IP_AB)
 
-    closeness = np.abs(Tversky-1.0)
-    #print(closeness)
-
-    if closeness < closeness_threshold:
+    if DP_AB < DP_threshold and IP_AB > IP_threshold:
         return True
     else:
         return False
@@ -158,17 +89,16 @@ def checkRotation(inputFilename,outputFilename,angle, closeness_threshold):
     else:
         return False
 
-def checkReflection(inputFilename, outputFilename, direction):
-    im = Image.open(inputFilename)
+def checkReflection(inputFilenameA, inputFilenameB, direction):
+    imgA = Image.open(inputFilename)
     if direction == "left_right":
-        im = im.transpose(Image.FLIP_LEFT_RIGHT)
+        imgA = imgA.transpose(Image.FLIP_LEFT_RIGHT)
     elif direction == "top_bottom":
-        im = im.transpose(Image.FLIP_TOP_BOTTOM)
+        imgA = imgA.transpose(Image.FLIP_TOP_BOTTOM)
     elif direction == "double":
-        im = im.transpose(Image.FLIP_TOP_BOTTOM).transpose(Image.FLIP_LEFT_RIGHT )
-    #im.show()
+        imgA = imgA.transpose(Image.FLIP_TOP_BOTTOM).transpose(Image.FLIP_LEFT_RIGHT )
 
-    im = im.convert('L')
+    imgA = imgA.convert('L')
 
     inputImage = image_to_array(im)
     outputImage = load_image_from_filename(outputFilename)
@@ -181,9 +111,9 @@ def checkReflection(inputFilename, outputFilename, direction):
     im.close()
 
     if closeness < closeness_threshold:
-        return True
+        return (True,Tversky)
     else:
-        return False
+        return (False,Tversky)
 
 # Check if an image is the sum of two other images
 def checkAddition(inputFilename1, inputFilename2, outputFilename):
