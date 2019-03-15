@@ -219,7 +219,7 @@ class Agent:
 			print("Remaining:")
 			for answer_figure in answer_figures:
 				print(answer_figure.name)
-
+			
 			# 6) Positive: DPR Heuristic
 			DPMean = image_processing.computeDP(problem.figures["H"].visualFilename,"filename")
 			min_closeness = 10
