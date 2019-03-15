@@ -3,8 +3,11 @@ import sys
 import csv
 
 from PIL import Image
+from PIL import ImageFilter
+
+
 import numpy as np
-#from matplotlib import pyplot as plt
+from matplotlib import pyplot as plt
 
 DP_threshold = 0.01
 IP_threshold = 0.77
@@ -32,7 +35,7 @@ def computeDP(input, flag):
         img = load_image_from_filename(input)
     elif flag == "image":
         img = input
-    return np.count_nonzero(img == 0)/(img.shape[0]*img.shape[1])
+    return np.count_nonzero(img != 255)/(img.shape[0]*img.shape[1])
 
 def computeIP(inputA,inputB, flag):
     if flag == "filename":
@@ -41,10 +44,11 @@ def computeIP(inputA,inputB, flag):
     elif flag == "image":
         imgA = inputA
         imgB = inputB
-    maskA = imgA == 0 # black in 1
-    maskB = imgB == 0 # black in 2
+    maskA = imgA != 255 # black in 1
+    maskB = imgB != 255 # black in 2
     AandB = np.count_nonzero(np.bitwise_and(maskA,maskB))
     AxorB = np.count_nonzero(np.bitwise_xor(maskA,maskB))
+    #print(AandB,AxorB)
     IP =   AandB / (AandB + AxorB)  
 
     return IP
@@ -133,8 +137,8 @@ def checkAddition(inputA, inputB, inputC, returnFlag):
     imgB = load_image_from_filename(inputB)
     imgC = load_image_from_filename(inputC)
 
-    maskA = imgA == 0 # black in 1
-    maskB = imgB == 0 # black in 2
+    maskA = imgA != 255 # black in 1
+    maskB = imgB != 255 # black in 2
     AorB = np.bitwise_or(maskA,maskB) # w = False, b = True
     addition = (AorB == 0) * 255
     #print(addition)
@@ -163,74 +167,41 @@ def checkAddition(inputA, inputB, inputC, returnFlag):
         DP,IP = result = computeIdentity(addition,imgC,"image")
         return (DP,IP)
 
+def internalSymmetryCheck(inputA,inputB,flag,plane):
+    if flag == "image":
+        imageA = Image.open(inputA,"r")
+        imageA = imageA.filter(ImageFilter.BLUR)
+        imageA = imageA.filter(ImageFilter.BLUR)
+        imageA = imageA.convert('L')
+        imageA = image_to_array(imageA)
+        
+        imageB = Image.open(inputB,"r")
+        imageB = imageB.filter(ImageFilter.BLUR)
+        imageB = imageB.filter(ImageFilter.BLUR)
 
-
-
-
-
-
-
-
-
-
-"""
-# Given two angles, determine whether a vertical or horizontal reflection occurs
-def guessRelection(angles):
-    start_angle = int(angles[0])
-    end_angle = int(angles[1])
-    difference = end_angle - start_angle
-    if difference < -90:
-        difference += 360
-    if difference > 90:
-        difference -= 360
-    if start_angle > 0 and start_angle <= 90:
-        quadrant = 1
-    elif start_angle > 90 and start_angle <= 180:
-        quadrant = 2
-    elif start_angle > 180 and start_angle <= 270:
-        quadrant = 3
-    elif (start_angle > 270 and start_angle <= 360) or start_angle == 0:
-        quadrant = 4
+        imageB = imageB.convert('L')
+        imageB = image_to_array(imageB)
+        
     else:
-        raise Exception("Invalid angle argument")
-    #print(angles,quadrant,difference)
+        imageA = inputA
+        imageB = inputB
+    if plane == "vertical":
+        left_halfA = imageA[:,0:imageA.shape[1]/2]
+        right_halfA = imageA[:,imageA.shape[1]/2:]
+        left_halfB = imageB[:,0:imageB.shape[1]/2]
+        right_halfB = imageB[:,imageB.shape[1]/2:]
+
+        #blurred = blurred.filter(ImageFilter.BLUR)
+        #blurred.show()
+
+    result1 = computeIdentity(left_halfA,right_halfB,"image")    
+    result2 = computeIdentity(right_halfA,left_halfB,"image")    
+
+    print(result1,result2)
+
+    plt.matshow(left_halfA)
+    plt.matshow(right_halfB)
+    #plt.matshow(right_halfA)
+    #plt.matshow(left_halfB)
     
-    if (quadrant == 1 or quadrant == 3) and difference == -90:
-        return "horizontal"
-    if (quadrant == 1 or quadrant == 3) and difference == 90:
-        return "vertical"
-    if (quadrant == 2 or quadrant == 4) and difference == 90:
-        return "horizontal"
-    if (quadrant == 2 or quadrant == 4) and difference == -90:
-        return "vertical"
-
-
-def performReflection(current_angle,reflection_type):
-    #print(current_angle,reflection_type)
-    current_angle = int(current_angle)
-    if current_angle > 0 and current_angle <= 90:
-        quadrant = 1
-    elif current_angle > 90 and current_angle <= 180:
-        quadrant = 2
-    elif current_angle > 180 and current_angle <= 270:
-        quadrant = 3
-    elif (current_angle > 270 and current_angle <= 360) or current_angle == 0:
-        quadrant = 4
-    else:
-        raise Exception("Invalid angle argument")
-    if (quadrant == 1 or quadrant == 3) and reflection_type == "horizontal":
-        current_angle -= 90
-    if (quadrant == 1 or quadrant == 3) and reflection_type == "vertical":
-        current_angle += 90
-    if quadrant == 2 and reflection_type == "horizontal":
-        current_angle += 90
-    if current_angle < 0:
-        current_angle += 360
-    if current_angle >=360:
-        current_angle -= 360
-    return str(current_angle)
-
-
-if __name__ == "__main__":
-    pass
-"""
+    plt.show()

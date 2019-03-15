@@ -3,7 +3,7 @@ import os
 import sys
 import csv
 import copy
-
+import warnings
 from Agent import Agent
 from ProblemSet import ProblemSet
 import image_processing
@@ -174,13 +174,12 @@ class TestUM(unittest.TestCase):
 		self.assertEqual(result,True)
 		print()
 
-	"""
 	def testAddition(self):
 		print("Testing Addition on C-12")
 		problem = self.problemDict["Basic Problem C-12"]
 		result = image_processing.checkAddition(problem.figures["B"].visualFilename,problem.figures["D"].visualFilename,problem.figures["E"].visualFilename,"check")
 		self.assertEqual(result,True)
-	"""
+	
 	def testComputeDPR(self):
 		print("Testing DPR on C-02")
 		problem = self.problemDict["Basic Problem C-02"]
@@ -217,6 +216,33 @@ class TestUM(unittest.TestCase):
 		selfcheck = image_processing.checkRotation(problem.figures["G"].visualFilename,problem.figures["G"].visualFilename,90,0.1)
 	"""	
 
+	def test_vertical_split(self):
+		print("testing vertical split")
+		with warnings.catch_warnings():
+			warnings.simplefilter("ignore")
+			problem = self.problemDict["Basic Problem C-09"]
+			#image_processing.internalSymmetryCheck(problem.figures["A"].visualFilename,problem.figures["C"].visualFilename,"image","vertical")
+			#print(image_processing.computeDP(problem.figures["A"].visualFilename,"filename"))
+			#print(image_processing.computeDP(problem.figures["B"].visualFilename,"filename"))
+			#print(image_processing.computeDP(problem.figures["C"].visualFilename,"filename"))
+			#print(image_processing.computeDP(problem.figures["D"].visualFilename,"filename"))
+			#print(image_processing.computeDP(problem.figures["E"].visualFilename,"filename"))
+			#print(image_processing.computeDP(problem.figures["F"].visualFilename,"filename"))
+			#print(image_processing.computeDP(problem.figures["G"].visualFilename,"filename"))
+			#print(image_processing.computeDP(problem.figures["H"].visualFilename,"filename"))
+			#print(image_processing.computeIP(problem.figures["A"].visualFilename,problem.figures["B"].visualFilename,"filename"))
+			#print(image_processing.computeIP(problem.figures["B"].visualFilename,problem.figures["C"].visualFilename,"filename"))
+			#print(image_processing.computeIP(problem.figures["D"].visualFilename,problem.figures["E"].visualFilename,"filename"))
+			#print(image_processing.computeIP(problem.figures["E"].visualFilename,problem.figures["F"].visualFilename,"filename"))
+			print(image_processing.computeIP(problem.figures["G"].visualFilename,problem.figures["H"].visualFilename,"filename"))
+			
+			answer_figures = [problem.figures[key] for key in problem.figures.keys() if key.isalpha() == False]
+			print("Ans")
+			for answer_figure in answer_figures:
+				print(answer_figure.name)
+				print(image_processing.computeDP(answer_figure.visualFilename,"filename"))
+				#print(image_processing.computeIP(problem.figures["G"].visualFilename,answer_figure.visualFilename,"filename"))
+			
 
 	def tearDown(self):
 		pass

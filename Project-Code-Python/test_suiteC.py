@@ -102,7 +102,6 @@ class TestUM(unittest.TestCase):
 			self.assertEqual(4, self.agent.Solve(problem))
 			print()
 
-	"""
 	def testC03(self):
 		print("===================C03")
 		with warnings.catch_warnings():
@@ -110,9 +109,6 @@ class TestUM(unittest.TestCase):
 			problem = self.problemDict["Basic Problem C-03"]
 			self.assertEqual(4, self.agent.Solve(problem))
 			print()	
-	"""
-
-	"""
 
 	
 	def testC02(self):

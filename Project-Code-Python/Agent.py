@@ -137,6 +137,9 @@ class Agent:
 					print("#5 Rotation")
 					return int(answer_figures[0].name)
 
+			
+
+
 			# 4) Negative: Connected Components number removal
 			numA = connectedComponents.computeComponents(problem.figures["A"].visualFilename)
 			numB = connectedComponents.computeComponents(problem.figures["B"].visualFilename)
@@ -217,7 +220,22 @@ class Agent:
 			for answer_figure in answer_figures:
 				print(answer_figure.name)
 
-			return -1
+			# 6) Positive: DPR Heuristic
+			DPMean = image_processing.computeDP(problem.figures["H"].visualFilename,"filename")
+			min_closeness = 10
+
+			for answer_figure in answer_figures:
+				DPAns = image_processing.computeDP(answer_figure.visualFilename,"filename")
+				IPAns1 = image_processing.computeIP(problem.figures["G"].visualFilename,answer_figure.visualFilename,"filename")
+				IPAns2 = image_processing.computeIP(problem.figures["H"].visualFilename,answer_figure.visualFilename,"filename")
+				closeness = np.abs(DPMean-DPAns) + np.abs(1-IPAns1) + np.abs(1-IPAns2)
+				if closeness < min_closeness:
+					min_closeness = closeness
+					closest_answer = answer_figure.name
+				print(answer_figure.name,DPAns,IPAns1,IPAns2,closeness)
+			print("#6")
+
+			return int(closest_answer)
 		"""
 		# 	# Addition hypothesis
 		# 	additionCheck = image_processing.checkAddition(problem.figures["B"].visualFilename,problem.figures["D"].visualFilename,problem.figures["E"].visualFilename)
