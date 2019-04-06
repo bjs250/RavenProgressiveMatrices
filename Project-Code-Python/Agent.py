@@ -59,7 +59,8 @@ class Agent:
 
 			# Execute graphical hypothesis testing
 
-			# 1) Positive: Identity (C01)
+			"""
+			# 1) Positive: Identity
 			identityAB = image_processing.checkIdentity(problem.figures["A"].visualFilename,problem.figures["B"].visualFilename,"filename")
 			identityBC = image_processing.checkIdentity(problem.figures["B"].visualFilename,problem.figures["C"].visualFilename,"filename")
 			print("idenAB,BC:",identityAB,identityBC)
@@ -70,376 +71,46 @@ class Agent:
 					if identityHAns:
 						print("#1 Identity", answer_figure.name)
 						return int(answer_figure.name)
+			"""
 
-			# 2) Positive: Clock (C07)
-			reflectionCheckBH = image_processing.checkReflection(problem.figures["B"].visualFilename,problem.figures["H"].visualFilename,"top_bottom")
-			reflectionCheckDF = image_processing.checkReflection(problem.figures["D"].visualFilename,problem.figures["F"].visualFilename,"left_right")
-			if reflectionCheckBH and reflectionCheckDF:
+			#2 ) Positive: OR Gate
+			orABC = image_processing.checkOR(problem.figures["A"].visualFilename,problem.figures["B"].visualFilename,problem.figures["C"].visualFilename,"check")
+			orDEF = image_processing.checkOR(problem.figures["D"].visualFilename,problem.figures["E"].visualFilename,problem.figures["F"].visualFilename,"check")
+			if orABC and orDEF:
 				for answer_figure in answer_figures:
-					reflectionCheckAAns = image_processing.checkReflection(problem.figures["A"].visualFilename,answer_figure.visualFilename,"double")
-					if reflectionCheckAAns:
-						print("#2 Clock", answer_figure.name)
+					orGHAns = image_processing.checkOR(problem.figures["G"].visualFilename,problem.figures["H"].visualFilename,answer_figure.visualFilename,"check")
+					print(answer_figure.name, orGHAns)
+					if orGHAns:
+						print("#2 OR Gate", answer_figure.name)
 						return int(answer_figure.name)
 
-			# 3) Positive: Addition (C12, C05)
-			additionCheckBDE = image_processing.checkAddition(problem.figures["B"].visualFilename,problem.figures["D"].visualFilename,problem.figures["E"].visualFilename, "check")
-			print("additioncheckBDE: ",additionCheckBDE)
-			if additionCheckBDE:
-				maxIP = 0
+			#3 ) Positive: AND Gate
+			andABC = image_processing.checkAND(problem.figures["A"].visualFilename,problem.figures["B"].visualFilename,problem.figures["C"].visualFilename,"check")
+			andDEF = image_processing.checkAND(problem.figures["D"].visualFilename,problem.figures["E"].visualFilename,problem.figures["F"].visualFilename,"check")
+			print(andABC,andDEF)
+			if andABC and andDEF:
 				for answer_figure in answer_figures:
-					DPAns,IPAns = image_processing.checkAddition(problem.figures["F"].visualFilename,problem.figures["H"].visualFilename,answer_figure.visualFilename,"compute")
-					if IPAns > maxIP:
-						maxIP = IPAns
-						ans = answer_figure.name
-					print(answer_figure.name,DPAns,IPAns)
-				print("#3 Addition", answer_figure.name,maxIP)
-				return int(ans)
+					andGHAns = image_processing.checkAND(problem.figures["G"].visualFilename,problem.figures["H"].visualFilename,answer_figure.visualFilename,"check")
+					print(answer_figure.name, andGHAns)
+					if andGHAns:
+						print("#3 AND Gate", answer_figure.name)
+						return int(answer_figure.name)
 
-			# 5) Negative: Rotation Trick (C4,C6,C10)
-			check = image_processing.checkRotation(problem.figures["G"].visualFilename,problem.figures["C"].visualFilename,90)
-			selfcheck = image_processing.checkRotation(problem.figures["G"].visualFilename,problem.figures["G"].visualFilename,90)
-			
-			#print(check,selfcheck)
-			if check and not selfcheck:
-				
-				passed = list()
-				print("Rotation removal triggered")
-				
-				# Do the rotation check
+			#4 ) Positive: XOR Gate
+			xorABC = image_processing.checkXOR(problem.figures["A"].visualFilename,problem.figures["B"].visualFilename,problem.figures["C"].visualFilename,"check")
+			xorDEF = image_processing.checkXOR(problem.figures["D"].visualFilename,problem.figures["E"].visualFilename,problem.figures["F"].visualFilename,"check")
+			print("xor",xorABC,xorDEF)
+			if xorABC and xorDEF:
+				best = 0
 				for answer_figure in answer_figures:
-					result = image_processing.checkRotation(answer_figure.visualFilename,answer_figure.visualFilename,90)
-					print(answer_figure.name,result)
-					if result == True:
-						passed.append(answer_figure)
+					xorGHAns = image_processing.checkXOR(problem.figures["G"].visualFilename,problem.figures["H"].visualFilename,answer_figure.visualFilename,"filename")
+					if xorGHAns[1] > best:
+						final_answer = answer_figure.name
+						best = xorGHAns[1]
+				print("#4 XOR Gate", answer_figure.name)
+				return int(final_answer)
 
-				answer_figures = passed
-
-				# Check if answer already appears
-				final_passed = list()
-				question_figures = [problem.figures[key] for key in problem.figures.keys() if key.isalpha() == True]
-				for index,answer_figure in enumerate(passed):
-					falseCount = 0
-					for question_figure in question_figures:
-						result = image_processing.checkIdentity(answer_figure.visualFilename,question_figure.visualFilename,"filename")
-						#print(question_figure.name,answer_figure.name,result, falseCount)
-						if result == False:
-							falseCount += 1
-							if falseCount == 8:
-								final_passed.append(answer_figure)
-				
-				answer_figures = final_passed
-
-				print("Remaining:")
-				for answer_figure in answer_figures:
-					print(answer_figure.name)
-
-				if len(answer_figures) == 1:
-					print("#5 Rotation")
-					return int(answer_figures[0].name)
-
-			
-
-
-			# 4) Negative: Connected Components number removal
-			numA = connectedComponents.computeComponents(problem.figures["A"].visualFilename)
-			numB = connectedComponents.computeComponents(problem.figures["B"].visualFilename)
-			numC = connectedComponents.computeComponents(problem.figures["C"].visualFilename)
-			numD = connectedComponents.computeComponents(problem.figures["D"].visualFilename)
-			numG = connectedComponents.computeComponents(problem.figures["G"].visualFilename)
-			numE = connectedComponents.computeComponents(problem.figures["E"].visualFilename)
-			numF = connectedComponents.computeComponents(problem.figures["F"].visualFilename)
-			numH = connectedComponents.computeComponents(problem.figures["H"].visualFilename)
-			numDict = {}
-			for answer_figure in answer_figures:
-				numDict[answer_figure.name] = connectedComponents.computeComponents(answer_figure.visualFilename)
-		
-			# Check if num count stays the same
-			objectCounts = list()
-			minObjects = 0
-			
-			if numF == numE and numH == numE:
-				print("Num Count Equal Removal")
-				objectCount = numE
-
-				passed = list()
-				for answer_figure in answer_figures:
-					numAns = numDict[answer_figure.name]
-					print(answer_figure.name,numAns)
-					if numAns == objectCount:
-						passed.append(answer_figure)	
-				answer_figures = passed
-
-				if len(answer_figures) == 1:
-					print("Num #4")
-					return int(answer_figures[0].name)
-		
-			"""
-			elif numF >= numE and numH >= numE:
-				print("Num >= removal triggered")
-				
-				minObjects = max([numE,numF,numH])
-
-				#print(minObjects)
-				passed = list()
-				for answer_figure in answer_figures:
-					numAns = numDict[answer_figure.name]
-					print(answer_figure.name,numAns)
-					if numAns >= minObjects:
-						passed.append(answer_figure)
-				answer_figures = passed	
-
-				if len(answer_figures) == 1:
-					print("Num #4")
-					return int(answer_figures[0].name)
-			"""
-
-			print("Remaining:")
-			for answer_figure in answer_figures:
-				print(answer_figure.name)
-
-			#Try the addition trick
-			print("Addition Trick:",numA,numB,numC,numD,numE,numF)
-			
-			if numC == numB + (numB - numA) and numF == numE + (numE - numD):
-				numTarget = numH + (numH-numG)
-				print(numG,numH,numTarget)
-				
-				passed = list()
-				for answer_figure in answer_figures:
-					numAns = numDict[answer_figure.name]
-					#print(answer_figure.name,num)
-					if numAns == numTarget:
-						passed.append(answer_figure)	
-				answer_figures = passed
-
-				if len(answer_figures) == 1:
-					print("Num #4")
-					return int(answer_figures[0].name)
-
-			print("Remaining:")
-			for answer_figure in answer_figures:
-				print(answer_figure.name)
-			
-			# 6) Positive: DPR Heuristic
-			DPMean = image_processing.computeDP(problem.figures["H"].visualFilename,"filename")
-			min_closeness = 10
-
-			for answer_figure in answer_figures:
-				DPAns = image_processing.computeDP(answer_figure.visualFilename,"filename")
-				IPAns1 = image_processing.computeIP(problem.figures["G"].visualFilename,answer_figure.visualFilename,"filename")
-				IPAns2 = image_processing.computeIP(problem.figures["H"].visualFilename,answer_figure.visualFilename,"filename")
-				closeness = np.abs(DPMean-DPAns) + np.abs(1-IPAns1) + np.abs(1-IPAns2)
-				if closeness < min_closeness:
-					min_closeness = closeness
-					closest_answer = answer_figure.name
-				print(answer_figure.name,DPAns,IPAns1,IPAns2,closeness)
-			print("#6")
-
-			return int(closest_answer)
-		"""
-		# 	# Addition hypothesis
-		# 	additionCheck = image_processing.checkAddition(problem.figures["B"].visualFilename,problem.figures["D"].visualFilename,problem.figures["E"].visualFilename)
-		# 	if additionCheck:
-		# 		for answer_figure in answer_figures:
-		# 			if image_processing.checkAddition(problem.figures["F"].visualFilename,problem.figures["H"].visualFilename,answer_figure.visualFilename):
-		# 				print("addition")
-		# 				return int(answer_figure.name)
-
-		# 	# DPR Testing
-		# 	DPRE = image_processing.computeDPR(problem.figures["E"].visualFilename)
-		# 	DPRF = image_processing.computeDPR(problem.figures["F"].visualFilename)
-		# 	DPRH = image_processing.computeDPR(problem.figures["H"].visualFilename)
-		# 	print("DPR",DPRE,DPRF,DPRH)
-
-		# 	if DPRF > DPRE and DPRH > DPRE:
-		# 		passed = list()
-		# 		print("DPR removal triggered")
-		# 		for answer_figure in answer_figures:
-		# 			DPR = image_processing.computeDPR(answer_figure.visualFilename)
-		# 			if DPR > DPRE:
-		# 				passed.append(answer_figure)
-		# 			else:
-		# 				print(answer_figure.name,DPR)
-		# 		answer_figures = passed
-
-		# 	# Clock check
-		# 	reflectionCheck1 = image_processing.checkReflection(problem.figures["B"].visualFilename,problem.figures["H"].visualFilename,"top_bottom")
-		# 	reflectionCheck2 = image_processing.checkReflection(problem.figures["D"].visualFilename,problem.figures["F"].visualFilename,"left_right")
-		# 	if reflectionCheck1 and reflectionCheck2:
-		# 		for answer_figure in answer_figures:
-		# 			if image_processing.checkReflection(problem.figures["A"].visualFilename,answer_figure.visualFilename,"double"):
-		# 				print("clock")
-		# 				return int(answer_figure.name)
-
-		# 	horizontal_pairs = self.pairObjects(problem.figures["E"].objects,problem.figures["F"].objects)
-		# 	vertical_pairs = self.pairObjects(problem.figures["E"].objects,problem.figures["H"].objects)
-			
-		# 	original = copy.deepcopy(problem.figures["E"].objects)
-			
-		# del_list = []
-		
-		# #Execute smart tester
-		# if problem.problemType == "3x3":
-
-		# 	# Rotation Symmetry Test
-		# 	threshold = 0.1
-		# 	check = image_processing.checkRotation(problem.figures["G"].visualFilename,problem.figures["C"].visualFilename,90,threshold)
-		# 	selfcheck = image_processing.checkRotation(problem.figures["G"].visualFilename,problem.figures["G"].visualFilename,90,threshold)
-			
-		# 	#print(check,selfcheck)
-		# 	if check and not selfcheck:
-				
-		# 		passed = list()
-		# 		print("Rotation removal triggered")
-				
-		# 		# Do the rotation check
-		# 		for answer_figure in answer_figures:
-		# 			result = image_processing.checkRotation(answer_figure.visualFilename,answer_figure.visualFilename,90,threshold)
-		# 			#print(answer_figure.name,result)
-		# 			if result == True:
-		# 				passed.append(answer_figure)
-
-		# 		# Check if answer already appears
-		# 		final_passed = list()
-		# 		question_figures = [problem.figures[key] for key in problem.figures.keys() if key.isalpha() == True]
-		# 		for index,answer_figure in enumerate(passed):
-		# 			falseCount = 0
-		# 			for question_figure in question_figures:
-		# 				result = image_processing.checkIdentity(answer_figure.visualFilename,question_figure.visualFilename)
-		# 				#print(question_figure.name,answer_figure.name,result, falseCount)
-		# 				if result == False:
-		# 					falseCount += 1
-		# 					if falseCount == 8:
-		# 						final_passed.append(answer_figure)
-				
-		# 		answer_figures = final_passed
-
-		# 	# Check if num count stays the same
-		# 	objectCounts = list()
-		# 	minObjects = 0
-		# 	numTL = len(problem.figures["E"].objects.keys())
-		# 	numTR = len(problem.figures["F"].objects.keys())
-		# 	numBL = len(problem.figures["H"].objects.keys())
-
-		# 	if numTR == numTL and numBL == numTL:
-		# 		print("Num equal removal triggered")
-		# 		objectCount = numTR
-
-		# 		passed = list()
-		# 		for answer_figure in answer_figures:
-		# 			num = len(answer_figure.objects.keys())
-		# 			#print(answer_figure.name,num)
-		# 			if num == objectCount:
-		# 				passed.append(answer_figure)	
-		# 		answer_figures = passed
-		
-		# 	# Eliminate based on num count
-		# 	elif numTR >= numTL and numBL >= numTL:
-		# 		print("Num > removal triggered")
-				
-		# 		minObjects = max([numTL,numTR,numBL])
-
-		# 		#print(minObjects)
-		# 		passed = list()
-		# 		for answer_figure in answer_figures:
-		# 			num = len(answer_figure.objects.keys())
-		# 			#print(answer_figure.name,num)
-		# 			if num >= minObjects:
-		# 				passed.append(answer_figure)
-		# 		answer_figures = passed
-			
-		# 	# Try the addition trick
-		# 	numA = len(problem.figures["A"].objects.keys())
-		# 	numB = len(problem.figures["B"].objects.keys())
-		# 	numC = len(problem.figures["C"].objects.keys())
-			
-		# 	numD = len(problem.figures["D"].objects.keys())
-		# 	numE = len(problem.figures["E"].objects.keys())
-		# 	numF = len(problem.figures["F"].objects.keys())
-
-		# 	#print(numA,numB,numC,numD,numE,numF)
-			
-		# 	if numC == numB + (numB - numA) and numF == numE + (numE - numD):
-		# 		numG = len(problem.figures["G"].objects.keys())
-		# 		numH = len(problem.figures["H"].objects.keys())
-		# 		numTarget = numH + (numH-numG)
-		# 		#print(numG,numH,numTarget)
-				
-		# 		passed = list()
-		# 		for answer_figure in answer_figures:
-		# 			num = len(answer_figure.objects.keys())
-		# 			#print(answer_figure.name,num)
-		# 			if num == numTarget:
-		# 				passed.append(answer_figure)	
-		# 		answer_figures = passed
-
-		# 	#print("-----")
-		# 	#print("remaining answers:")
-
-		# 	#for answer_figure in answer_figures:
-		# 	#	print(answer_figure.name)
-
-		# best = 1000
-		# answer = -1
-		# for answer_figure in answer_figures:
-		# 	pairs = self.pairObjects(original,answer_figure.objects)
-		# 	sum = 0
-
-		# 	# fix interdependent attributes
-		# 	pairMap = {}
-		# 	for pair in pairs:
-		# 		str_pair = self.pairToString(pair)
-		# 		pairMap[str_pair[1]] = str_pair[0]
-		# 	for key,obj in answer_figure.objects.items():
-		# 		for attr_name in interdependent_attributes:
-		# 			if attr_name in obj.attributes:
-		# 				inside_str = obj.attributes[attr_name]
-		# 				entries = inside_str.split(",")
-		# 				edit_string = ""
-		# 				#print(answer_figure.name,pairMap)
-		# 				for entry in entries:
-		# 					if pairMap[entry] is not None:
-		# 						edit_string += pairMap[entry] + ","
-		# 				edit_string = edit_string[:-1]
-		# 				#print(edit_string)
-		# 				obj.attributes[attr_name] = edit_string
-
-		# 	for pair in pairs:
-		# 		if pair[0] is not None:
-		# 			str1 = pair[0].name
-		# 			attr1 = original[str1].attributes
-		# 		else:
-		# 			str1 = None
-		# 			attr1 = {}
-		# 		if pair[1] is not None:
-		# 			str2 = pair[1].name
-		# 			attr2 = answer_figure.objects[str2].attributes
-		# 		else:
-		# 			str2 = None
-		# 			attr2 = {}
-		# 		differences = self.compareAttributes(attr1, attr2)
-		# 		sum += len(differences)
-		# 	self.log(debug,answer_figure.name,sum)
-		# 	if sum < best:
-		# 		answer = answer_figure.name
-		# 		best_answer = answer_figure
-		# 		best_pairs = pairs
-		# 		best_pairMap = pairMap
-		# 		best = sum
-		# 	print(answer_figure.name,sum)
-		# if best != 0:
-		# 	self.log(True,"End of main:","True answer never found: " + str(best))
-		# 	#print("Answer: " + answer)
-		# 	#print("Generated")
-		# 	#for key,value in original.items():
-		# 	#	print(key,value.attributes)
-		# 	#print("Answer")
-		# 	#for key,value in best_answer.objects.items():
-		# 	#	print(key,value.attributes)
-		# 	#print(best_pairMap)
-		"""
-
-		#return int(answer)
+		return -1
 
 #=======================================================================================
 

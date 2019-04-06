@@ -123,7 +123,7 @@ def checkReflection(inputFilenameA, inputFilenameB, direction):
     return result
 
 # Check if an image is the sum of two other images
-def checkAddition(inputA, inputB, inputC, returnFlag):
+def checkOR(inputA, inputB, inputC, returnFlag):
     if 1:
         #im1 = Image.open(inputFilename1)
         #im1.show()
@@ -141,30 +141,63 @@ def checkAddition(inputA, inputB, inputC, returnFlag):
     maskB = imgB != 255 # black in 2
     AorB = np.bitwise_or(maskA,maskB) # w = False, b = True
     addition = (AorB == 0) * 255
-    #print(addition)
-
-    # addition2 = imgA + imgB
-    
-    # for row in range(addition2.shape[0]):
-    #     for col in range(addition2.shape[1]):
-    #         # w + w
-    #         if addition2[row][col] == 510:
-    #             addition2[row][col] = 255
-    #         # b + w or w + b
-    #         elif addition2[row][col] == 255:
-    #             addition2[row][col] = 0
-    #         elif addition2[row][col] == 0:
-    #             addition2[row][col] = 0
-    
-    #print(addition == addition2)
-    #plt.show()
-    #print(result)
 
     if returnFlag == "check":
         result = checkIdentity(addition,imgC,"image")
         return result
     else:
         DP,IP = result = computeIdentity(addition,imgC,"image")
+        return (DP,IP)
+
+# Check if an image is the AND gate of images
+def checkAND(inputA, inputB, inputC, returnFlag):
+    if 1:
+        #im1 = Image.open(inputFilename1)
+        #im1.show()
+        #im2 = Image.open(inputFilename2)
+        #im2.show()
+        #im3 = Image.open(outputFilename)
+        #im3.show()
+        pass
+        
+    imgA = load_image_from_filename(inputA)
+    imgB = load_image_from_filename(inputB)
+    imgC = load_image_from_filename(inputC)
+
+    maskA = imgA != 255 # black in 1
+    maskB = imgB != 255 # black in 2
+    AandB = np.bitwise_and(maskA,maskB) # w = False, b = True
+    result = (AandB == 0) * 255
+    
+    if returnFlag == "check":
+        return checkIdentity(result,imgC,"image")
+    else:
+        DP,IP = computeIdentity(result,imgC,"image")
+        return (DP,IP)
+
+def checkXOR(inputA, inputB, inputC, returnFlag):
+    if 1:
+        #im1 = Image.open(inputFilename1)
+        #im1.show()
+        #im2 = Image.open(inputFilename2)
+        #im2.show()
+        #im3 = Image.open(outputFilename)
+        #im3.show()
+        pass
+        
+    imgA = load_image_from_filename(inputA)
+    imgB = load_image_from_filename(inputB)
+    imgC = load_image_from_filename(inputC)
+
+    maskA = imgA != 255 # black in 1
+    maskB = imgB != 255 # black in 2
+    AandB = np.bitwise_xor(maskA,maskB) # w = False, b = True
+    result = (AandB == 0) * 255
+    
+    if returnFlag == "check":
+        return checkIdentity(result,imgC,"image")
+    else:
+        DP,IP = computeIdentity(result,imgC,"image")
         return (DP,IP)
 
 def internalSymmetryCheck(inputA,inputB,flag,plane):
