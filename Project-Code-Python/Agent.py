@@ -59,21 +59,36 @@ class Agent:
 
 			# Execute graphical hypothesis testing
 
-			"""
-			# 1) Positive: Identity
+			
+			# Positive: Identity
 			identityAB = image_processing.checkIdentity(problem.figures["A"].visualFilename,problem.figures["B"].visualFilename,"filename")
 			identityBC = image_processing.checkIdentity(problem.figures["B"].visualFilename,problem.figures["C"].visualFilename,"filename")
-			print("idenAB,BC:",identityAB,identityBC)
-			if identityAB and identityBC:
+			identityDE = image_processing.checkIdentity(problem.figures["D"].visualFilename,problem.figures["E"].visualFilename,"filename")
+			identityEF = image_processing.checkIdentity(problem.figures["E"].visualFilename,problem.figures["F"].visualFilename,"filename")
+			
+			print("===iden:",identityAB,identityBC, identityDE, identityEF)
+			if (identityAB and identityBC) or (identityDE and identityEF):
 				for answer_figure in answer_figures:
 					identityHAns = image_processing.checkIdentity(problem.figures["H"].visualFilename,answer_figure.visualFilename,"filename")
 					print(answer_figure.name, identityHAns)
 					if identityHAns:
-						print("#1 Identity", answer_figure.name)
+						print("Identity", answer_figure.name)
 						return int(answer_figure.name)
-			"""
+			
+			# Positive: Identity 2
+			identityAE = image_processing.checkIdentity(problem.figures["A"].visualFilename,problem.figures["E"].visualFilename,"filename")
+			
+			print("===iden 2:",identityAE)
+			if (identityAE):
+				for answer_figure in answer_figures:
+					identityEAns = image_processing.checkIdentity(problem.figures["E"].visualFilename,answer_figure.visualFilename,"filename")
+					print(answer_figure.name, identityEAns)
+					if identityEAns:
+						print("Identity 2", answer_figure.name)
+						return int(answer_figure.name)
+			
 
-			#2 ) Positive: OR Gate
+			# Positive: OR Gate
 			orABC = image_processing.checkOR(problem.figures["A"].visualFilename,problem.figures["B"].visualFilename,problem.figures["C"].visualFilename,"check")
 			orDEF = image_processing.checkOR(problem.figures["D"].visualFilename,problem.figures["E"].visualFilename,problem.figures["F"].visualFilename,"check")
 			if orABC and orDEF:
@@ -81,10 +96,10 @@ class Agent:
 					orGHAns = image_processing.checkOR(problem.figures["G"].visualFilename,problem.figures["H"].visualFilename,answer_figure.visualFilename,"check")
 					print(answer_figure.name, orGHAns)
 					if orGHAns:
-						print("#2 OR Gate", answer_figure.name)
+						print("OR Gate", answer_figure.name)
 						return int(answer_figure.name)
 
-			#3 ) Positive: AND Gate
+			# Positive: AND Gate
 			andABC = image_processing.checkAND(problem.figures["A"].visualFilename,problem.figures["B"].visualFilename,problem.figures["C"].visualFilename,"check")
 			andDEF = image_processing.checkAND(problem.figures["D"].visualFilename,problem.figures["E"].visualFilename,problem.figures["F"].visualFilename,"check")
 			print(andABC,andDEF)
@@ -93,10 +108,10 @@ class Agent:
 					andGHAns = image_processing.checkAND(problem.figures["G"].visualFilename,problem.figures["H"].visualFilename,answer_figure.visualFilename,"check")
 					print(answer_figure.name, andGHAns)
 					if andGHAns:
-						print("#3 AND Gate", answer_figure.name)
+						print("AND Gate", answer_figure.name)
 						return int(answer_figure.name)
 
-			#4 ) Positive: XOR Gate
+			# Positive: XOR Gate
 			xorABC = image_processing.checkXOR(problem.figures["A"].visualFilename,problem.figures["B"].visualFilename,problem.figures["C"].visualFilename,"check")
 			xorDEF = image_processing.checkXOR(problem.figures["D"].visualFilename,problem.figures["E"].visualFilename,problem.figures["F"].visualFilename,"check")
 			print("xor",xorABC,xorDEF)
@@ -107,7 +122,7 @@ class Agent:
 					if xorGHAns[1] > best:
 						final_answer = answer_figure.name
 						best = xorGHAns[1]
-				print("#4 XOR Gate", answer_figure.name)
+				print("XOR Gate", answer_figure.name)
 				return int(final_answer)
 
 		return -1

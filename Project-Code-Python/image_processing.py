@@ -9,8 +9,8 @@ from PIL import ImageFilter
 import numpy as np
 from matplotlib import pyplot as plt
 
-DP_threshold = 0.01
-IP_threshold = 0.77
+DP_threshold = 0.02
+IP_threshold = 0.75
 
 def load_image_from_filename(infilename):
     x = Image.open(infilename,"r")
