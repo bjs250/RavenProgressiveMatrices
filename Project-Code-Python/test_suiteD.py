@@ -38,6 +38,7 @@ class TestUM(unittest.TestCase):
 					self.problemDict[problem.name] = problem
 			#print("=================================")
 
+	"""
     # Identity
 	def testD01(self):
 		print("===================D01")
@@ -58,6 +59,13 @@ class TestUM(unittest.TestCase):
 		print("===================D11")
 		problem = self.problemDict["Basic Problem D-11"]
 		self.assertEqual(3, self.agent.Solve(problem))
+	
+	"""
+	def testD10(self):
+		print("===================D10")
+		problem = self.problemDict["Basic Problem D-10"]
+		self.assertEqual(1, self.agent.Solve(problem))
+
 
 	def tearDown(self):
 		pass

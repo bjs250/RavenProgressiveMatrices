@@ -58,7 +58,6 @@ class Agent:
 				return -1
 
 			# Execute graphical hypothesis testing
-
 			
 			# Positive: Identity
 			identityAB = image_processing.checkIdentity(problem.figures["A"].visualFilename,problem.figures["B"].visualFilename,"filename")
@@ -86,7 +85,22 @@ class Agent:
 					if identityEAns:
 						print("Identity 2", answer_figure.name)
 						return int(answer_figure.name)
-			
+
+			# Identity tests failed --> no repeats
+			filtered_answer_figures = {answer_figure.name:answer_figure for answer_figure in answer_figures}
+			print(filtered_answer_figures)
+			question_figures = [problem.figures[key] for key in problem.figures.keys() if key.isalpha() == True]
+			for answer_figure in answer_figures:
+				for question_figure in question_figures:
+					print(question_figure.name,answer_figure.name)
+					DP,IP = image_processing.computeIdentity(question_figure.visualFilename,answer_figure.visualFilename,"filename")
+					if DP < 0.015 and IP > 0.75:
+						print("======",question_figure.name,answer_figure.name)
+						del filtered_answer_figures[answer_figure.name]
+			print("dict", filtered_answer_figures)
+			answer_figures = list(filtered_answer_figures.values())
+			if len(answer_figures) == 1:
+				return int(answer_figures[0].name)
 
 			# Positive: OR Gate
 			orABC = image_processing.checkOR(problem.figures["A"].visualFilename,problem.figures["B"].visualFilename,problem.figures["C"].visualFilename,"check")

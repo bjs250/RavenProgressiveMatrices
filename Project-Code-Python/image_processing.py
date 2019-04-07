@@ -73,8 +73,7 @@ def computeIdentity(inputFilenameA, inputFilenameB,flag):
     IP_AB = computeIP(inputFilenameA,inputFilenameB,flag)
     DP_AB = np.abs(DP_A - DP_B)
 
-    #print(DP_A,DP_B,DP_AB,IP_AB)
-    #print(DP_AB,IP_AB)
+    print(DP_AB,IP_AB)
 
     return (DP_AB,IP_AB)
 

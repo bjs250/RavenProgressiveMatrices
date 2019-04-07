@@ -30,7 +30,8 @@ class TestUM(unittest.TestCase):
 		for set in self.sets:
 			for problem in set.problems: 
 				self.problemDict[problem.name] = problem
-		
+	
+	"""
 	def test_B01_A(self):
 		problem = self.problemDict["Basic Problem B-01"]
 		imageFileNameA = problem.figures["A"].visualFilename
@@ -65,6 +66,16 @@ class TestUM(unittest.TestCase):
 		print(grid)
 		count = connectedComponents.computePixelRatio(grid,0)
 		print(count)
+	"""
+
+	def test_D07_E(self):
+		problem = self.problemDict["Basic Problem D-07"]
+		imageFileName = problem.figures["E"].visualFilename
+		count = connectedComponents.computeComponents(imageFileName)
+		self.assertEqual(count,5)
+
+
+
 
 	def tearDown(self):
 		pass
