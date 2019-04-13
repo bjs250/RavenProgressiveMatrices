@@ -11,6 +11,45 @@ import numpy as np
 import image_processing
 #import matplotlib.pyplot as plt
 
+def computeCorners(imageFilename):
+    if type(imageFilename) != type(np.ones((1,1))):
+        grid = image_processing.load_image_from_filename(imageFilename)
+    else:
+        grid = imageFilename
+
+    # Apply a threshold to make sure that there are only black and white pixels
+    grid = (grid != 0) * 255
+
+    corners = {1:0,2:0,3:0,4:0,5:0,6:0,7:0,8:0}        
+    for i in range(1,len(grid)-1):
+        for j in range(1,len(grid[i]-1)):
+            if grid[i][j] == 0:
+                bcount = 0
+                #cardinal
+                if grid[i-1][j] == 0:
+                    bcount += 1
+                if grid[i+1][j] == 0:
+                    bcount += 1
+                if grid[i][j-1] == 0:
+                    bcount += 1
+                if grid[i][j+1] == 0:
+                    bcount += 1
+                #diag
+                if grid[i-1][j-1] == 0:
+                    bcount += 1
+                if grid[i+1][j+1] == 0:
+                    bcount += 1
+                if grid[i-1][j+1] == 0:
+                    bcount += 1
+                if grid[i+1][j-1] == 0:
+                    bcount += 1
+
+                corners[bcount] +=1
+    plt.imshow(grid)
+    plt.show()
+    
+    return corners
+
 def computeComponents(imageFilename, bounding_box_flag):
     if type(imageFilename) != type(np.ones((1,1))):
         grid = image_processing.load_image_from_filename(imageFilename)

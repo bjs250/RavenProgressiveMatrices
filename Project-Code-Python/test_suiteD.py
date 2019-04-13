@@ -4,11 +4,13 @@ import sys
 import csv
 import copy
 import warnings
+import operator
 
 from Agent import Agent
 from ProblemSet import ProblemSet
 import image_processing
 import numpy as np
+import connectedComponents
 from RavensObject import RavensObject
 
 def getNextLine(r):
@@ -38,22 +40,31 @@ class TestUM(unittest.TestCase):
 					self.problemDict[problem.name] = problem
 			#print("=================================")
 
-    # Identity
+	# Identity
+	def testD04(self):
+		print("===================D04")
+		problem = self.problemDict["Basic Problem D-04"]
+		self.assertEqual(1, self.agent.Solve(problem))
+
+	"""
 	def testD01(self):
 		print("===================D01")
 		problem = self.problemDict["Basic Problem D-01"]
 		self.assertEqual(3, self.agent.Solve(problem))
 
+	
 	def testD02(self):
 		print("===================D02")
 		problem = self.problemDict["Basic Problem D-02"]
 		self.assertEqual(1, self.agent.Solve(problem))
 
+	
 	def testD03(self):
 		print("===================D03")
 		problem = self.problemDict["Basic Problem D-03"]
 		self.assertEqual(3, self.agent.Solve(problem))
-
+	
+	
 	def testD11(self):
 		print("===================D11")
 		problem = self.problemDict["Basic Problem D-11"]
@@ -73,11 +84,6 @@ class TestUM(unittest.TestCase):
 		print("===================D09")
 		problem = self.problemDict["Basic Problem D-09"]
 		self.assertEqual(3, self.agent.Solve(problem))
-
-	def testD04(self):
-		print("===================D04")
-		problem = self.problemDict["Basic Problem D-04"]
-		self.assertEqual(1, self.agent.Solve(problem))
 
 	def testD05(self):
 		print("===================D05")
@@ -100,7 +106,28 @@ class TestUM(unittest.TestCase):
 		print("===================D08")
 		problem = self.problemDict["Basic Problem D-08"]
 		self.assertEqual(4, self.agent.Solve(problem))
+	"""
+	
+	"""
+	def test_seg(self):
+		print("===================D08")
+		problem = self.problemDict["Basic Problem D-10"]
+		question_figures = [problem.figures[key] for key in problem.figures.keys() if key.isalpha() == True]
+		
+		DPs = {}
+		for question_figure in question_figures:
+			DP = image_processing.computeDP(question_figure.visualFilename, "filename")
+			DPs[question_figure.name] = DP
+		sorted_DPs = sorted(DPs.items(), key=operator.itemgetter(1))
+		print(sorted_DPs)
 
+		CCs = {}
+		for question_figure in question_figures:
+			CC = connectedComponents.computeComponents(question_figure.visualFilename,False)
+			CCs[question_figure.name] = CC
+		sorted_CCs = sorted(CCs.items(), key=operator.itemgetter(1))
+		print(sorted_CCs)
+	"""
 
 	def tearDown(self):
 		pass

@@ -151,6 +151,21 @@ def checkOR(inputA, inputB, inputC, returnFlag):
         DP,IP = result = computeIdentity(addition,imgC,"image")
         return (DP,IP)
 
+def computeAND(inputA,inputB, flag):
+    if flag == "filename":
+        imgA = load_image_from_filename(inputA)
+        imgB = load_image_from_filename(inputB)
+    else:
+        imgA = inputA
+        imgB = inputB
+
+    maskA = imgA != 255 # black in 1
+    maskB = imgB != 255 # black in 2
+    AandB = np.bitwise_and(maskA,maskB) # w = False, b = True
+    result = (AandB == 0) * 255
+    
+    return result
+
 # Check if an image is the AND gate of images
 def checkAND(inputA, inputB, inputC, returnFlag):
     if 1:

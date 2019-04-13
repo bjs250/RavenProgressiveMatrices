@@ -2,6 +2,7 @@ import unittest
 import os
 import sys
 import csv
+import operator
 
 from Agent import Agent
 from ProblemSet import ProblemSet
@@ -32,6 +33,7 @@ class TestUM(unittest.TestCase):
 			for problem in set.problems: 
 				self.problemDict[problem.name] = problem
 	
+	"""
 	def test_D12(self):
 		problem = self.problemDict["Basic Problem D-12"]
 		imageFileName = problem.figures["A"].visualFilename
@@ -53,8 +55,6 @@ class TestUM(unittest.TestCase):
 		count = connectedComponents.computeComponents(imageFileName,False)
 		self.assertEqual(count,4)
 
-
-	"""
 	def test_B01_A(self):
 		problem = self.problemDict["Basic Problem B-01"]
 		imageFileNameA = problem.figures["A"].visualFilename
@@ -172,6 +172,22 @@ class TestUM(unittest.TestCase):
 
 			self.assertEqual(answer1 or answer2,True)
 	"""
+
+	def test_D10(self):
+		problem = self.problemDict["Basic Problem D-08"]
+		question_figures = [problem.figures[key] for key in problem.figures.keys() if key.isalpha() == True]
+		d = {}
+		for question_figure in question_figures:
+			corners = connectedComponents.computeCorners(question_figure.visualFilename)
+			d[question_figure.name] = corners
+
+		for key in d.keys():
+			print(key,d[key])
+
+		d2 = {key:d[key][3] for key in d}
+		sorted_d2 = sorted(d2.items(), key=operator.itemgetter(1))
+		print(sorted_d2)
+
 
 	def tearDown(self):
 		pass

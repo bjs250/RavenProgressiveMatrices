@@ -12,6 +12,7 @@
 from PIL import Image
 import numpy as np
 import copy
+import operator
 from RavensObject import RavensObject
 
 import image_processing
@@ -46,83 +47,132 @@ class Agent:
 
 		if problem.problemType == "2x2":
 			# Get objects, hardcoded 2x2, single object per figure
-			horizontal_pairs = self.pairObjects(problem.figures["A"].objects,problem.figures["B"].objects)
-			vertical_pairs = self.pairObjects(problem.figures["A"].objects,problem.figures["C"].objects)
+			#horizontal_pairs = self.pairObjects(problem.figures["A"].objects,problem.figures["B"].objects)
+			#vertical_pairs = self.pairObjects(problem.figures["A"].objects,problem.figures["C"].objects)
 			
 			# Objects dictionary from Figure A
-			original = copy.deepcopy(problem.figures["A"].objects)
+			#original = copy.deepcopy(problem.figures["A"].objects)
 			return -1
 		
 		elif problem.problemType == "3x3":
 			if "Challenge" in problem.name:
 				return -1
+		
+		if "D-" in problem.name:
 
 			# Execute graphical hypothesis testing
 			
-			# Positive: Identity
+			# Positive: Identity (Row 1 and Row 2 all equivalent)
 			identityAB = image_processing.checkIdentity(problem.figures["A"].visualFilename,problem.figures["B"].visualFilename,"filename")
 			identityBC = image_processing.checkIdentity(problem.figures["B"].visualFilename,problem.figures["C"].visualFilename,"filename")
 			identityDE = image_processing.checkIdentity(problem.figures["D"].visualFilename,problem.figures["E"].visualFilename,"filename")
 			identityEF = image_processing.checkIdentity(problem.figures["E"].visualFilename,problem.figures["F"].visualFilename,"filename")
 			
-			#print("===iden:",identityAB,identityBC, identityDE, identityEF)
+			print("===Identity 1 Test:") #D1
 			if (identityAB and identityBC) or (identityDE and identityEF):
+				DPs = {}
+				IPs = {}
 				for answer_figure in answer_figures:
-					identityHAns = image_processing.checkIdentity(problem.figures["H"].visualFilename,answer_figure.visualFilename,"filename")
-					#print(answer_figure.name, identityHAns)
-					if identityHAns:
-						print("Identity", answer_figure.name)
-						return int(answer_figure.name)
+					DP,IP = image_processing.computeIdentity(problem.figures["H"].visualFilename,answer_figure.visualFilename,"filename")
+					DPs[answer_figure.name] = DP
+					IPs[answer_figure.name] = IP
+				sorted_DP = sorted(DPs.items(), key=operator.itemgetter(1))
+				sorted_DP_dict = {t[0]:t[1] for t in sorted_DP}
+				sorted_IP = sorted(IPs.items(), key=operator.itemgetter(1))
+				sorted_IP_dict = {t[0]:t[1] for t in sorted_IP}
+				scores = self.computeScores(sorted_DP_dict,sorted_IP_dict)
+				sorted_scores = sorted(scores.items(), key=operator.itemgetter(1))
+				ans = sorted_scores[-1][0]
+				print(sorted_scores)
+				return int(ans)
 			
-			# Positive: Identity 2
+			# Positive: Identity (Rolling Diagonals)
 			identityAE = image_processing.checkIdentity(problem.figures["A"].visualFilename,problem.figures["E"].visualFilename,"filename")
+			identityBF = image_processing.checkIdentity(problem.figures["B"].visualFilename,problem.figures["F"].visualFilename,"filename")
+			identityDH = image_processing.checkIdentity(problem.figures["D"].visualFilename,problem.figures["H"].visualFilename,"filename")
 			
-			print("===iden 2:",identityAE)
-			if (identityAE):
+			print("===Identity 2 Test:",identityAE, identityBF, identityDH) #D2,D3
+			if (identityAE and identityBF and identityDH):
+				DPs = {}
+				IPs = {}
 				for answer_figure in answer_figures:
-					identityEAns = image_processing.checkIdentity(problem.figures["E"].visualFilename,answer_figure.visualFilename,"filename")
-					#print(answer_figure.name, identityEAns)
-					if identityEAns:
-						print("Identity 2", answer_figure.name)
-						return int(answer_figure.name)
+					DP,IP = image_processing.computeIdentity(problem.figures["E"].visualFilename,answer_figure.visualFilename,"filename")
+					DPs[answer_figure.name] = DP
+					IPs[answer_figure.name] = IP
+				sorted_DP = sorted(DPs.items(), key=operator.itemgetter(1))
+				sorted_DP_dict = {t[0]:t[1] for t in sorted_DP}
+				sorted_IP = sorted(IPs.items(), key=operator.itemgetter(1))
+				sorted_IP_dict = {t[0]:t[1] for t in sorted_IP}
+				scores = self.computeScores(sorted_DP_dict,sorted_IP_dict)
+				sorted_scores = sorted(scores.items(), key=operator.itemgetter(1))
+				ans = sorted_scores[-1][0]
+				print(sorted_scores)
+				return int(ans)
 
-			# Positive: OR Gate
-			orABC = image_processing.checkOR(problem.figures["A"].visualFilename,problem.figures["B"].visualFilename,problem.figures["C"].visualFilename,"check")
-			orDEF = image_processing.checkOR(problem.figures["D"].visualFilename,problem.figures["E"].visualFilename,problem.figures["F"].visualFilename,"check")
-			if orABC and orDEF:
-				for answer_figure in answer_figures:
-					orGHAns = image_processing.checkOR(problem.figures["G"].visualFilename,problem.figures["H"].visualFilename,answer_figure.visualFilename,"check")
-					#print(answer_figure.name, orGHAns)
-					if orGHAns:
-						print("OR Gate", answer_figure.name)
-						return int(answer_figure.name)
-
+			print("===AND Test: rows") #D4
 			# Positive: AND Gate
-			andABC = image_processing.checkAND(problem.figures["A"].visualFilename,problem.figures["B"].visualFilename,problem.figures["C"].visualFilename,"check")
-			andDEF = image_processing.checkAND(problem.figures["D"].visualFilename,problem.figures["E"].visualFilename,problem.figures["F"].visualFilename,"check")
-			#print(andABC,andDEF)
-			if andABC and andDEF:
-				for answer_figure in answer_figures:
-					andGHAns = image_processing.checkAND(problem.figures["G"].visualFilename,problem.figures["H"].visualFilename,answer_figure.visualFilename,"check")
-					#print(answer_figure.name, andGHAns)
-					if andGHAns:
-						print("AND Gate", answer_figure.name)
-						return int(answer_figure.name)
+			AND_AB = image_processing.computeAND(problem.figures["A"].visualFilename,problem.figures["B"].visualFilename,"filename")
+			AND_BC = image_processing.computeAND(problem.figures["B"].visualFilename,problem.figures["C"].visualFilename,"filename")
+			iden_rowA = image_processing.checkIdentity(AND_AB,AND_BC,"image")
+			
+			AND_AD = image_processing.computeAND(problem.figures["A"].visualFilename,problem.figures["D"].visualFilename,"filename")
+			AND_DG = image_processing.computeAND(problem.figures["D"].visualFilename,problem.figures["G"].visualFilename,"filename")
+			iden_colA = image_processing.checkIdentity(AND_AD,AND_DG,"image")
+			
 
-			# Positive: XOR Gate
-			xorABC = image_processing.checkXOR(problem.figures["A"].visualFilename,problem.figures["B"].visualFilename,problem.figures["C"].visualFilename,"check")
-			xorDEF = image_processing.checkXOR(problem.figures["D"].visualFilename,problem.figures["E"].visualFilename,problem.figures["F"].visualFilename,"check")
-			#print("xor",xorABC,xorDEF)
-			if xorABC and xorDEF:
-				best = 0
+			if iden_rowA and iden_colA:
+				AND_GH = image_processing.computeAND(problem.figures["G"].visualFilename,problem.figures["H"].visualFilename,"filename")
+				AND_CF = image_processing.computeAND(problem.figures["C"].visualFilename,problem.figures["F"].visualFilename,"filename")
+				
+				DPs = {}
+				IPs = {}
 				for answer_figure in answer_figures:
-					xorGHAns = image_processing.checkXOR(problem.figures["G"].visualFilename,problem.figures["H"].visualFilename,answer_figure.visualFilename,"filename")
-					if xorGHAns[1] > best:
-						final_answer = answer_figure.name
-						best = xorGHAns[1]
-				print("XOR Gate", answer_figure.name)
-				return int(final_answer)
+					DP,IP = image_processing.computeIdentity(AND_GH,image_processing.load_image_from_filename(answer_figure.visualFilename),"image")
+					DPs[answer_figure.name] = DP
+					IPs[answer_figure.name] = IP
+				sorted_DP = sorted(DPs.items(), key=operator.itemgetter(1))
+				sorted_DP_dict = {t[0]:t[1] for t in sorted_DP}
+				sorted_IP = sorted(IPs.items(), key=operator.itemgetter(1))
+				sorted_IP_dict = {t[0]:t[1] for t in sorted_IP}
+				scores = self.computeScores(sorted_DP_dict,sorted_IP_dict)
+				
+				DPs = {}
+				IPs = {}
+				for answer_figure in answer_figures:
+					DP,IP = image_processing.computeIdentity(AND_CF,image_processing.load_image_from_filename(answer_figure.visualFilename),"image")
+					DPs[answer_figure.name] = DP
+					IPs[answer_figure.name] = IP
+				sorted_DP = sorted(DPs.items(), key=operator.itemgetter(1))
+				sorted_DP_dict = {t[0]:t[1] for t in sorted_DP}
+				sorted_IP = sorted(IPs.items(), key=operator.itemgetter(1))
+				sorted_IP_dict = {t[0]:t[1] for t in sorted_IP}
+				scores2 = self.computeScores(sorted_DP_dict,sorted_IP_dict)
+				
+				total_scores = {}
+				for key in scores.keys():
+					total_scores[key] = scores[key] + scores2[key]
 
+				sorted_scores = sorted(total_scores.items(), key=operator.itemgetter(1))
+
+				ans = sorted_scores[-1][0]
+				print(sorted_scores)
+				return int(ans)
+
+
+			# andABC = image_processing.checkAND(problem.figures["A"].visualFilename,problem.figures["B"].visualFilename,problem.figures["C"].visualFilename,"check")
+			# andDEF = image_processing.checkAND(problem.figures["D"].visualFilename,problem.figures["E"].visualFilename,problem.figures["F"].visualFilename,"check")
+			# #print(andABC,andDEF)
+			# if andABC and andDEF:
+			# 	for answer_figure in answer_figures:
+			# 		andGHAns = image_processing.checkAND(problem.figures["G"].visualFilename,problem.figures["H"].visualFilename,answer_figure.visualFilename,"check")
+			# 		#print(answer_figure.name, andGHAns)
+			# 		if andGHAns:
+			# 			print("AND Gate", answer_figure.name)
+			# 			return int(answer_figure.name)
+
+
+		
+			"""
 			# Identity tests failed --> no repeats
 			filtered_answer_figures = {answer_figure.name:answer_figure for answer_figure in answer_figures}
 			#print(filtered_answer_figures)
@@ -162,30 +212,69 @@ class Agent:
 			# Remove answers that have similar connected components to A and E
 
 			# Apply heuristic as last resort
-			DP_A = image_processing.computeDP(problem.figures["A"].visualFilename,"filename")
-			DP_E = image_processing.computeDP(problem.figures["E"].visualFilename,"filename")
-			DP_Avg = (DP_A + DP_E)/2.0
-			min_DP = 1
-			best_answer = None
-			print("Average DP: ", DP_Avg)
-			for answer_figure in answer_figures:
-				DP_Ans = image_processing.computeDP(answer_figure.visualFilename,"filename")
-				if DP_Ans < min_DP:
-					best_answer = int(answer_figure.name)
-					min_DP = DP_Ans
-				print(answer_figure.name, DP_Ans, np.abs(DP_Ans-DP_Avg))
-				print("===heuristic")
-				return best_answer
+			# DP_A = image_processing.computeDP(problem.figures["A"].visualFilename,"filename")
+			# DP_E = image_processing.computeDP(problem.figures["E"].visualFilename,"filename")
+			# DP_Avg = (DP_A + DP_E)/2.0
+			# min_DP = 1
+			# best_answer = None
+			# print("Average DP: ", DP_Avg)
+			# for answer_figure in answer_figures:
+			# 	DP_Ans = image_processing.computeDP(answer_figure.visualFilename,"filename")
+			# 	if DP_Ans < min_DP:
+			# 		best_answer = int(answer_figure.name)
+			# 		min_DP = DP_Ans
+			# 	print(answer_figure.name, DP_Ans, np.abs(DP_Ans-DP_Avg))
+			# 	print("===heuristic")
+			# 	return best_answer
+			"""
 
-		return -1
-		"""
+		elif "E-" in problem.name:
+
+			# Positive: OR Gate
+			orABC = image_processing.checkOR(problem.figures["A"].visualFilename,problem.figures["B"].visualFilename,problem.figures["C"].visualFilename,"check")
+			orDEF = image_processing.checkOR(problem.figures["D"].visualFilename,problem.figures["E"].visualFilename,problem.figures["F"].visualFilename,"check")
+			if orABC and orDEF:
+				for answer_figure in answer_figures:
+					orGHAns = image_processing.checkOR(problem.figures["G"].visualFilename,problem.figures["H"].visualFilename,answer_figure.visualFilename,"check")
+					#print(answer_figure.name, orGHAns)
+					if orGHAns:
+						print("OR Gate", answer_figure.name)
+						return int(answer_figure.name)
+
+			# Positive: AND Gate
+			andABC = image_processing.checkAND(problem.figures["A"].visualFilename,problem.figures["B"].visualFilename,problem.figures["C"].visualFilename,"check")
+			andDEF = image_processing.checkAND(problem.figures["D"].visualFilename,problem.figures["E"].visualFilename,problem.figures["F"].visualFilename,"check")
+			#print(andABC,andDEF)
+			if andABC and andDEF:
+				for answer_figure in answer_figures:
+					andGHAns = image_processing.checkAND(problem.figures["G"].visualFilename,problem.figures["H"].visualFilename,answer_figure.visualFilename,"check")
+					#print(answer_figure.name, andGHAns)
+					if andGHAns:
+						print("AND Gate", answer_figure.name)
+						return int(answer_figure.name)
+
+			# Positive: XOR Gate
+			xorABC = image_processing.checkXOR(problem.figures["A"].visualFilename,problem.figures["B"].visualFilename,problem.figures["C"].visualFilename,"check")
+			xorDEF = image_processing.checkXOR(problem.figures["D"].visualFilename,problem.figures["E"].visualFilename,problem.figures["F"].visualFilename,"check")
+			#print("xor",xorABC,xorDEF)
+			if xorABC and xorDEF:
+				best = 0
+				for answer_figure in answer_figures:
+					xorGHAns = image_processing.checkXOR(problem.figures["G"].visualFilename,problem.figures["H"].visualFilename,answer_figure.visualFilename,"filename")
+					if xorGHAns[1] > best:
+						final_answer = answer_figure.name
+						best = xorGHAns[1]
+				print("XOR Gate", answer_figure.name)
+				return int(final_answer)
+
+		#return -1
 		if len(answer_figures) > 0:
 			index = np.random.choice(len(answer_figures),1)[0]
 			ans = answer_figures[index].name
 			return int(ans)
 		else:
 			return -1
-		"""
+		
 #=======================================================================================
 
 # Get relationships and transform, hardcoded 2x2
@@ -350,6 +439,12 @@ class Agent:
 	def log(self, debug, header,text):
 		if debug:
 			print(header,text)
+
+	def computeScores(self,DP_dict,IP_dict):
+		scores = {}
+		for key in DP_dict.keys():
+			scores[key] = (1.0-DP_dict[key]) + IP_dict[key]
+		return scores
 
 	def pairObjects(self,objects1,objects2):
 		objs1 = [(key,value) for key,value in objects1.items()]
