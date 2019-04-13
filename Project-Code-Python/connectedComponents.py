@@ -167,3 +167,34 @@ def gateComponents(pairingMatrix,flag):
             if flag == "XOR":
                 d["cols"].append(index)
     return(d)
+
+def getRelationship(bb1,bb2,pairingMatrix,flag):
+    results = gateComponents(pairingMatrix,flag)
+
+    if flag == "AND":
+        return {index:bb1[item+1] for index,item in enumerate(results["rows"])}
+    elif flag == "XOR":
+        bb_common1 = {index:bb1[item+1] for index,item in enumerate(results["rows"])}
+        bb_common2 = {index:bb2[item+1] for index,item in enumerate(results["rows"])}
+        return (bb_common1,bb_common2)
+
+def check3(inputA,inputB,inputC,flag):
+    bb1 = computeComponents(inputA, True)
+    bb2 = computeComponents(inputB, True)
+    pairingMatrix = compareComponents(bb1,bb2)
+    flag = "AND"
+    bb_common = getRelationship(bb1,bb2,pairingMatrix,flag)
+    
+    if len(bb_common.keys())>0: # something in common
+        
+        bb3 = computeComponents(inputC, True)
+        if flag is "AND":
+            pairingMatrix = compareComponents(bb_common,bb3)
+            
+            answer = True
+            for row in pairingMatrix:
+                if 1 not in row:
+                    answer = False
+    else:
+        answer = False
+    return answer

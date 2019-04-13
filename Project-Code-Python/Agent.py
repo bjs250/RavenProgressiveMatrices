@@ -110,52 +110,97 @@ class Agent:
 				return int(ans)
 
 			print("===AND Test: rows") #D4
-			# Positive: AND Gate
-			AND_AB = image_processing.computeAND(problem.figures["A"].visualFilename,problem.figures["B"].visualFilename,"filename")
-			AND_BC = image_processing.computeAND(problem.figures["B"].visualFilename,problem.figures["C"].visualFilename,"filename")
-			iden_rowA = image_processing.checkIdentity(AND_AB,AND_BC,"image")
-			
-			AND_AD = image_processing.computeAND(problem.figures["A"].visualFilename,problem.figures["D"].visualFilename,"filename")
-			AND_DG = image_processing.computeAND(problem.figures["D"].visualFilename,problem.figures["G"].visualFilename,"filename")
-			iden_colA = image_processing.checkIdentity(AND_AD,AND_DG,"image")
-			
-
-			if iden_rowA and iden_colA:
-				AND_GH = image_processing.computeAND(problem.figures["G"].visualFilename,problem.figures["H"].visualFilename,"filename")
-				AND_CF = image_processing.computeAND(problem.figures["C"].visualFilename,problem.figures["F"].visualFilename,"filename")
+			# Row check
+			row_same = {}
+			if connectedComponents.check3(problem.figures["A"].visualFilename,problem.figures["B"].visualFilename,problem.figures["C"].visualFilename,"AND"):
 				
-				DPs = {}
-				IPs = {}
+				# Every answer must have that connected component
+				bb1 = connectedComponents.computeComponents(problem.figures["G"].visualFilename, True)
+				bb2 = connectedComponents.computeComponents(problem.figures["H"].visualFilename, True)
+				
+				# Figure out which components are in common
+				pairingMatrix = connectedComponents.compareComponents(bb1,bb2)
+				flag = "AND"
+				bb_common = connectedComponents.getRelationship(bb1,bb2,pairingMatrix,flag)
+				
+				# Compare that to answer choice
+				answer_figures = [problem.figures[key] for key in problem.figures.keys() if key.isalpha() == False]
 				for answer_figure in answer_figures:
-					DP,IP = image_processing.computeIdentity(AND_GH,image_processing.load_image_from_filename(answer_figure.visualFilename),"image")
-					DPs[answer_figure.name] = DP
-					IPs[answer_figure.name] = IP
-				sorted_DP = sorted(DPs.items(), key=operator.itemgetter(1))
-				sorted_DP_dict = {t[0]:t[1] for t in sorted_DP}
-				sorted_IP = sorted(IPs.items(), key=operator.itemgetter(1))
-				sorted_IP_dict = {t[0]:t[1] for t in sorted_IP}
-				scores = self.computeScores(sorted_DP_dict,sorted_IP_dict)
+
+					bb3 = connectedComponents.computeComponents(answer_figure.visualFilename, True)
+					if flag is "AND":
+						pairingMatrix = connectedComponents.compareComponents(bb_common,bb3)
+						
+						answer = True
+						for row in pairingMatrix:
+							if 1 not in row:
+								answer = False
+
+					row_same[answer_figure.name] = answer
 				
-				DPs = {}
-				IPs = {}
+
+			# Col check
+			col_same = {}
+			if connectedComponents.check3(problem.figures["A"].visualFilename,problem.figures["D"].visualFilename,problem.figures["G"].visualFilename,"AND"):
+				
+				# Every answer must have that connected component
+				bb1 = connectedComponents.computeComponents(problem.figures["C"].visualFilename, True)
+				bb2 = connectedComponents.computeComponents(problem.figures["F"].visualFilename, True)
+				
+				# Figure out which components are in common
+				pairingMatrix = connectedComponents.compareComponents(bb1,bb2)
+				flag = "AND"
+				bb_common = connectedComponents.getRelationship(bb1,bb2,pairingMatrix,flag)
+				
+				# Compare that to answer choice
+				answer_figures = [problem.figures[key] for key in problem.figures.keys() if key.isalpha() == False]
 				for answer_figure in answer_figures:
-					DP,IP = image_processing.computeIdentity(AND_CF,image_processing.load_image_from_filename(answer_figure.visualFilename),"image")
-					DPs[answer_figure.name] = DP
-					IPs[answer_figure.name] = IP
-				sorted_DP = sorted(DPs.items(), key=operator.itemgetter(1))
-				sorted_DP_dict = {t[0]:t[1] for t in sorted_DP}
-				sorted_IP = sorted(IPs.items(), key=operator.itemgetter(1))
-				sorted_IP_dict = {t[0]:t[1] for t in sorted_IP}
-				scores2 = self.computeScores(sorted_DP_dict,sorted_IP_dict)
-				
-				total_scores = {}
-				for key in scores.keys():
-					total_scores[key] = scores[key] + scores2[key]
 
-				sorted_scores = sorted(total_scores.items(), key=operator.itemgetter(1))
+					bb3 = connectedComponents.computeComponents(answer_figure.visualFilename, True)
+					if flag is "AND":
+						pairingMatrix = connectedComponents.compareComponents(bb_common,bb3)
+						
+						answer = True
+						for row in pairingMatrix:
+							if 1 not in row:
+								answer = False
 
-				ans = sorted_scores[-1][0]
-				print(sorted_scores)
+					col_same[answer_figure.name] = answer
+			
+			print("row")
+			for key in row_same.keys():
+				print(key,row_same[key])
+
+
+			print("col")
+			for key in col_same.keys():
+				print(key,col_same[key])
+
+			# get the survivors 
+			union = []
+			for key in row_same.keys():
+				if row_same[key]:
+					if key not in union:
+						union.append(key)
+			for key in col_same.keys():
+				if col_same[key]:
+					if key not in union:
+						union.append(key)
+			
+			intersection = []
+			for key in union:
+				if key in row_same and row_same[key] and key in col_same and col_same[key]:
+					if key not in intersection:
+						intersection.append(key)
+
+			print("union",union)
+			print("intersection",intersection)
+
+
+			# If the intersection is one at this point, we are done
+			if len(intersection) == 1:
+				ans = intersection[0]
+				print("Singleton intersection")
 				return int(ans)
 
 

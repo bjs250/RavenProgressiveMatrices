@@ -46,6 +46,12 @@ class TestUM(unittest.TestCase):
 		problem = self.problemDict["Basic Problem D-04"]
 		self.assertEqual(1, self.agent.Solve(problem))
 
+	def testD05(self):
+		print("===================D05")
+		problem = self.problemDict["Basic Problem D-05"]
+		self.assertEqual(7, self.agent.Solve(problem))
+
+
 	"""
 	def testD01(self):
 		print("===================D01")
