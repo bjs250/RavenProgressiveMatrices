@@ -65,11 +65,11 @@ class Agent:
 			identityDE = image_processing.checkIdentity(problem.figures["D"].visualFilename,problem.figures["E"].visualFilename,"filename")
 			identityEF = image_processing.checkIdentity(problem.figures["E"].visualFilename,problem.figures["F"].visualFilename,"filename")
 			
-			print("===iden:",identityAB,identityBC, identityDE, identityEF)
+			#print("===iden:",identityAB,identityBC, identityDE, identityEF)
 			if (identityAB and identityBC) or (identityDE and identityEF):
 				for answer_figure in answer_figures:
 					identityHAns = image_processing.checkIdentity(problem.figures["H"].visualFilename,answer_figure.visualFilename,"filename")
-					print(answer_figure.name, identityHAns)
+					#print(answer_figure.name, identityHAns)
 					if identityHAns:
 						print("Identity", answer_figure.name)
 						return int(answer_figure.name)
@@ -81,26 +81,10 @@ class Agent:
 			if (identityAE):
 				for answer_figure in answer_figures:
 					identityEAns = image_processing.checkIdentity(problem.figures["E"].visualFilename,answer_figure.visualFilename,"filename")
-					print(answer_figure.name, identityEAns)
+					#print(answer_figure.name, identityEAns)
 					if identityEAns:
 						print("Identity 2", answer_figure.name)
 						return int(answer_figure.name)
-
-			# Identity tests failed --> no repeats
-			filtered_answer_figures = {answer_figure.name:answer_figure for answer_figure in answer_figures}
-			print(filtered_answer_figures)
-			question_figures = [problem.figures[key] for key in problem.figures.keys() if key.isalpha() == True]
-			for answer_figure in answer_figures:
-				for question_figure in question_figures:
-					print(question_figure.name,answer_figure.name)
-					DP,IP = image_processing.computeIdentity(question_figure.visualFilename,answer_figure.visualFilename,"filename")
-					if DP < 0.015 and IP > 0.75:
-						print("======",question_figure.name,answer_figure.name)
-						del filtered_answer_figures[answer_figure.name]
-			print("dict", filtered_answer_figures)
-			answer_figures = list(filtered_answer_figures.values())
-			if len(answer_figures) == 1:
-				return int(answer_figures[0].name)
 
 			# Positive: OR Gate
 			orABC = image_processing.checkOR(problem.figures["A"].visualFilename,problem.figures["B"].visualFilename,problem.figures["C"].visualFilename,"check")
@@ -108,7 +92,7 @@ class Agent:
 			if orABC and orDEF:
 				for answer_figure in answer_figures:
 					orGHAns = image_processing.checkOR(problem.figures["G"].visualFilename,problem.figures["H"].visualFilename,answer_figure.visualFilename,"check")
-					print(answer_figure.name, orGHAns)
+					#print(answer_figure.name, orGHAns)
 					if orGHAns:
 						print("OR Gate", answer_figure.name)
 						return int(answer_figure.name)
@@ -116,11 +100,11 @@ class Agent:
 			# Positive: AND Gate
 			andABC = image_processing.checkAND(problem.figures["A"].visualFilename,problem.figures["B"].visualFilename,problem.figures["C"].visualFilename,"check")
 			andDEF = image_processing.checkAND(problem.figures["D"].visualFilename,problem.figures["E"].visualFilename,problem.figures["F"].visualFilename,"check")
-			print(andABC,andDEF)
+			#print(andABC,andDEF)
 			if andABC and andDEF:
 				for answer_figure in answer_figures:
 					andGHAns = image_processing.checkAND(problem.figures["G"].visualFilename,problem.figures["H"].visualFilename,answer_figure.visualFilename,"check")
-					print(answer_figure.name, andGHAns)
+					#print(answer_figure.name, andGHAns)
 					if andGHAns:
 						print("AND Gate", answer_figure.name)
 						return int(answer_figure.name)
@@ -128,7 +112,7 @@ class Agent:
 			# Positive: XOR Gate
 			xorABC = image_processing.checkXOR(problem.figures["A"].visualFilename,problem.figures["B"].visualFilename,problem.figures["C"].visualFilename,"check")
 			xorDEF = image_processing.checkXOR(problem.figures["D"].visualFilename,problem.figures["E"].visualFilename,problem.figures["F"].visualFilename,"check")
-			print("xor",xorABC,xorDEF)
+			#print("xor",xorABC,xorDEF)
 			if xorABC and xorDEF:
 				best = 0
 				for answer_figure in answer_figures:
@@ -139,7 +123,30 @@ class Agent:
 				print("XOR Gate", answer_figure.name)
 				return int(final_answer)
 
-		return -1
+			# Identity tests failed --> no repeats
+			filtered_answer_figures = {answer_figure.name:answer_figure for answer_figure in answer_figures}
+			#print(filtered_answer_figures)
+			question_figures = [problem.figures[key] for key in problem.figures.keys() if key.isalpha() == True]
+			for answer_figure in answer_figures:
+				for question_figure in question_figures:
+					#print(question_figure.name,answer_figure.name)
+					DP,IP = image_processing.computeIdentity(question_figure.visualFilename,answer_figure.visualFilename,"filename")
+					if DP < 0.015 and IP > 0.75:
+						#print("======",question_figure.name,answer_figure.name)
+						if answer_figure.name in filtered_answer_figures:
+							del filtered_answer_figures[answer_figure.name]
+						
+			#print("dict", filtered_answer_figures)
+			answer_figures = list(filtered_answer_figures.values())
+			if len(answer_figures) == 1:
+				return int(answer_figures[0].name)
+
+		if len(answer_figures) > 0:
+			index = np.random.choice(len(answer_figures),1)[0]
+			ans = answer_figures[index].name
+			return int(ans)
+		else:
+			return -1
 
 #=======================================================================================
 

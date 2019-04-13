@@ -66,15 +66,24 @@ class TestUM(unittest.TestCase):
 		print(grid)
 		count = connectedComponents.computePixelRatio(grid,0)
 		print(count)
-	"""
+	
 
 	def test_D07_E(self):
 		problem = self.problemDict["Basic Problem D-07"]
 		imageFileName = problem.figures["E"].visualFilename
-		count = connectedComponents.computeComponents(imageFileName)
+		count = connectedComponents.computeComponents(imageFileName, False)
 		self.assertEqual(count,5)
-
-
+	"""
+	
+	def test_D07_AE(self):
+		problem = self.problemDict["Basic Problem D-07"]
+		#bb1 = connectedComponents.computeComponents(problem.figures["A"].visualFilename, True)
+		#bb2 = connectedComponents.computeComponents(problem.figures["E"].visualFilename, True)
+		bb1 = connectedComponents.computeComponents(problem.figures["C"].visualFilename, True)
+		bb2 = connectedComponents.computeComponents(problem.figures["E"].visualFilename, True)
+		
+		pairingMatrix = connectedComponents.compareComponents(bb1,bb2)
+		print(pairingMatrix,bb1[2].shape,bb2[2].shape)
 
 
 	def tearDown(self):

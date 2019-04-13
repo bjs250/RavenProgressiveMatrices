@@ -49,7 +49,10 @@ def computeIP(inputA,inputB, flag):
     AandB = np.count_nonzero(np.bitwise_and(maskA,maskB))
     AxorB = np.count_nonzero(np.bitwise_xor(maskA,maskB))
     #print(AandB,AxorB)
-    IP =   AandB / (AandB + AxorB)  
+    if (AandB + AxorB) != 0:
+        IP =   AandB / (AandB + AxorB)  
+    else:
+        IP = 0
 
     return IP
 
@@ -60,7 +63,7 @@ def checkIdentity(inputFilenameA, inputFilenameB,flag):
     DP_AB = np.abs(DP_A - DP_B)
 
     #print(DP_A,DP_B,DP_AB,IP_AB)
-    print(DP_AB,IP_AB)
+    #print(DP_AB,IP_AB)
 
     if (DP_AB < DP_threshold and IP_AB > IP_threshold) or (DP_AB < DP_threshold*2 and IP_AB > .95):
         return True
@@ -73,7 +76,7 @@ def computeIdentity(inputFilenameA, inputFilenameB,flag):
     IP_AB = computeIP(inputFilenameA,inputFilenameB,flag)
     DP_AB = np.abs(DP_A - DP_B)
 
-    print(DP_AB,IP_AB)
+    #print(DP_AB,IP_AB)
 
     return (DP_AB,IP_AB)
 
