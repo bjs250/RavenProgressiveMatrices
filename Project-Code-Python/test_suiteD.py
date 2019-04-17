@@ -38,7 +38,6 @@ class TestUM(unittest.TestCase):
 					self.problemDict[problem.name] = problem
 			#print("=================================")
 
-	"""
     # Identity
 	def testD01(self):
 		print("===================D01")
@@ -60,11 +59,47 @@ class TestUM(unittest.TestCase):
 		problem = self.problemDict["Basic Problem D-11"]
 		self.assertEqual(3, self.agent.Solve(problem))
 	
-	"""
 	def testD10(self):
 		print("===================D10")
 		problem = self.problemDict["Basic Problem D-10"]
 		self.assertEqual(1, self.agent.Solve(problem))
+
+	def testD07(self):
+		print("===================D07")
+		problem = self.problemDict["Basic Problem D-07"]
+		self.assertEqual(1, self.agent.Solve(problem))
+	
+	def testD09(self):
+		print("===================D09")
+		problem = self.problemDict["Basic Problem D-09"]
+		self.assertEqual(3, self.agent.Solve(problem))
+
+	def testD04(self):
+		print("===================D04")
+		problem = self.problemDict["Basic Problem D-04"]
+		self.assertEqual(1, self.agent.Solve(problem))
+
+	def testD05(self):
+		print("===================D05")
+		problem = self.problemDict["Basic Problem D-05"]
+		self.assertEqual(7, self.agent.Solve(problem))
+
+#########################
+
+	def testD06(self):
+		print("===================D06")
+		problem = self.problemDict["Basic Problem D-06"]
+		self.assertEqual(1, self.agent.Solve(problem))
+
+	def testD12(self):
+		print("===================D12")
+		problem = self.problemDict["Basic Problem D-12"]
+		self.assertEqual(3, self.agent.Solve(problem))
+
+	def testD08(self):
+		print("===================D08")
+		problem = self.problemDict["Basic Problem D-08"]
+		self.assertEqual(4, self.agent.Solve(problem))
 
 
 	def tearDown(self):

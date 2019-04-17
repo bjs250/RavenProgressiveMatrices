@@ -9,7 +9,7 @@ import csv
 
 import numpy as np
 import image_processing
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 
 def computeComponents(imageFilename, bounding_box_flag):
     if type(imageFilename) != type(np.ones((1,1))):
@@ -54,6 +54,8 @@ def computeComponents(imageFilename, bounding_box_flag):
                         background[counter][x][y+1] = 0
                         queue.insert(0,[x,y+1])
                     queue.pop()
+                if len(d[counter]) == 0:
+                    counter -= 1
                 counter += 1
                 d[counter] = []
                 background[counter] = np.ones(grid.shape) * 255
@@ -62,22 +64,22 @@ def computeComponents(imageFilename, bounding_box_flag):
     del background[counter]
     counter-=1
 
-    # Get bounding boxes of components
-    bounding_boxes = {}
-    for component in d.keys():
-        xpos = [t[0] for t in d[component]]
-        xmax = max(xpos)
-        xmin = min(xpos)
-        ypos = [t[1] for t in d[component]]
-        ymax = max(ypos)
-        ymin = min(ypos)
-        #print(component, xmin, ymin, xmax, ymax)
-        bounding_boxes[component] = background[component][xmin:xmax,ymin:ymax]
-    
-    #plt.imshow(bounding_boxes[2])
+    #plt.imshow(grid)
     #plt.show()
+    #print("test",[(key,len(d[key])) for key in d.keys()])
 
     if bounding_box_flag == True:
+        # Get bounding boxes of components
+        bounding_boxes = {}
+        for component in d.keys():
+            xpos = [t[0] for t in d[component]]
+            xmax = max(xpos)
+            xmin = min(xpos)
+            ypos = [t[1] for t in d[component]]
+            ymax = max(ypos)
+            ymin = min(ypos)
+            #print(component, xmin, ymin, xmax, ymax)
+            bounding_boxes[component] = background[component][xmin:xmax,ymin:ymax]
         return bounding_boxes
     else:
         return counter

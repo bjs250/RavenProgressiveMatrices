@@ -32,6 +32,28 @@ class TestUM(unittest.TestCase):
 			for problem in set.problems: 
 				self.problemDict[problem.name] = problem
 	
+	def test_D12(self):
+		problem = self.problemDict["Basic Problem D-12"]
+		imageFileName = problem.figures["A"].visualFilename
+		count = connectedComponents.computeComponents(imageFileName,False)
+		self.assertEqual(count,3)
+		imageFileName = problem.figures["B"].visualFilename
+		count = connectedComponents.computeComponents(imageFileName,False)
+		self.assertEqual(count,4)
+		imageFileName = problem.figures["C"].visualFilename
+		count = connectedComponents.computeComponents(imageFileName,False)
+		self.assertEqual(count,5)
+		imageFileName = problem.figures["D"].visualFilename
+		count = connectedComponents.computeComponents(imageFileName,False)
+		self.assertEqual(count,5)
+		imageFileName = problem.figures["E"].visualFilename
+		count = connectedComponents.computeComponents(imageFileName,False)
+		self.assertEqual(count,3)
+		imageFileName = problem.figures["F"].visualFilename
+		count = connectedComponents.computeComponents(imageFileName,False)
+		self.assertEqual(count,4)
+
+
 	"""
 	def test_B01_A(self):
 		problem = self.problemDict["Basic Problem B-01"]
@@ -99,7 +121,7 @@ class TestUM(unittest.TestCase):
 			if 1 not in row:
 				answer = False
 		self.assertEqual(answer,True)	
-	"""
+	
 
 	def test_D07_AE(self):
 		problem = self.problemDict["Basic Problem D-07"]
@@ -149,6 +171,7 @@ class TestUM(unittest.TestCase):
 					answer2 = False
 
 			self.assertEqual(answer1 or answer2,True)
+	"""
 
 	def tearDown(self):
 		pass

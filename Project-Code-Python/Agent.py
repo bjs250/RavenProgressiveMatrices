@@ -135,19 +135,57 @@ class Agent:
 						#print("======",question_figure.name,answer_figure.name)
 						if answer_figure.name in filtered_answer_figures:
 							del filtered_answer_figures[answer_figure.name]
-						
-			#print("dict", filtered_answer_figures)
+			
+			print("dict", filtered_answer_figures.keys())
 			answer_figures = list(filtered_answer_figures.values())
 			if len(answer_figures) == 1:
+				print("====Elimination 1")
 				return int(answer_figures[0].name)
 
+			# Remove answers that don't have the same number of connected components as A and E
+			numA = connectedComponents.computeComponents(problem.figures["A"].visualFilename,False)
+			numE = connectedComponents.computeComponents(problem.figures["E"].visualFilename,False)
+			if numA == numE:
+				print("try numA = numE")
+				filtered_answer_figures = {answer_figure.name:answer_figure for answer_figure in answer_figures}
+				for answer_figure in answer_figures:
+					numAns = connectedComponents.computeComponents(answer_figure.visualFilename,False)
+					if numAns != numA:
+						del filtered_answer_figures[answer_figure.name]
+			
+			print("dict", filtered_answer_figures.keys())
+			answer_figures = list(filtered_answer_figures.values())
+			if len(answer_figures) == 1:
+				print("====Elimination 2")
+				return int(answer_figures[0].name)
+
+			# Remove answers that have similar connected components to A and E
+
+			# Apply heuristic as last resort
+			DP_A = image_processing.computeDP(problem.figures["A"].visualFilename,"filename")
+			DP_E = image_processing.computeDP(problem.figures["E"].visualFilename,"filename")
+			DP_Avg = (DP_A + DP_E)/2.0
+			min_DP = 1
+			best_answer = None
+			print("Average DP: ", DP_Avg)
+			for answer_figure in answer_figures:
+				DP_Ans = image_processing.computeDP(answer_figure.visualFilename,"filename")
+				if DP_Ans < min_DP:
+					best_answer = int(answer_figure.name)
+					min_DP = DP_Ans
+				print(answer_figure.name, DP_Ans, np.abs(DP_Ans-DP_Avg))
+				print("===heuristic")
+				return best_answer
+
+		return -1
+		"""
 		if len(answer_figures) > 0:
 			index = np.random.choice(len(answer_figures),1)[0]
 			ans = answer_figures[index].name
 			return int(ans)
 		else:
 			return -1
-
+		"""
 #=======================================================================================
 
 # Get relationships and transform, hardcoded 2x2
