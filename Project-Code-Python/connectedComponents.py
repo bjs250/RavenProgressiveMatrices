@@ -21,8 +21,10 @@ def computeComponents(imageFilename, bounding_box_flag):
     grid = (grid != 0) * 255
 
     counter = 1
-    d = {}
+    d = {} # for holding connected components and associated pixels
     d[1] = []
+    background = {} # for holding the "mask" of the image with only the white pixels
+    background[1] = np.ones(grid.shape) * 255
 
     for i in range(len(grid)):
         for j in range(len(grid[i])):
@@ -34,24 +36,30 @@ def computeComponents(imageFilename, bounding_box_flag):
                     if x-1 >= 0 and grid[x-1][y] == 0:
                         grid[x-1][y] = counter
                         d[counter].append((x-1,y))
+                        background[counter][x-1][y] = 0
                         queue.insert(0,[x-1,y])
                     if x+1 <= len(grid)-1 and grid[x+1][y] == 0:
                         grid[x+1][y] = counter
                         d[counter].append((x+1,y))
+                        background[counter][x+1][y] = 0
                         queue.insert(0,[x+1,y])
                     if y-1 >= 0 and grid[x][y-1] == 0:
                         grid[x][y-1] = counter
                         d[counter].append((x,y-1))
+                        background[counter][x][y-1] = 0
                         queue.insert(0,[x,y-1])
                     if y+1 <= len(grid[0])-1 and grid[x][y+1] == 0:
                         grid[x][y+1] = counter
                         d[counter].append((x,y+1))
+                        background[counter][x][y+1] = 0
                         queue.insert(0,[x,y+1])
                     queue.pop()
                 counter += 1
                 d[counter] = []
+                background[counter] = np.ones(grid.shape) * 255
 
     del d[counter]
+    del background[counter]
     counter-=1
 
     # Get bounding boxes of components
@@ -63,12 +71,10 @@ def computeComponents(imageFilename, bounding_box_flag):
         ypos = [t[1] for t in d[component]]
         ymax = max(ypos)
         ymin = min(ypos)
-        print(component, xmin, ymin, xmax, ymax)
-        bounding_boxes[component] = grid[xmin:xmax,ymin:ymax]
+        #print(component, xmin, ymin, xmax, ymax)
+        bounding_boxes[component] = background[component][xmin:xmax,ymin:ymax]
     
-    #print(d)
-    #print(counter)
-    #plt.imshow(bounding_boxes[3])
+    #plt.imshow(bounding_boxes[2])
     #plt.show()
 
     if bounding_box_flag == True:
@@ -90,11 +96,33 @@ def compareComponents(bb1,bb2):
             temp1[0:bb1[c1].shape[0],0:bb1[c1].shape[1]] = bb1[c1]
             temp2[0:bb2[c2].shape[0],0:bb2[c2].shape[1]] = bb2[c2]
             DP,IP = image_processing.computeIdentity(temp1,temp2,"image")
-            #print(DP,IP)
+            #print(c1,c2,DP,IP)
             if DP < 0.1 and IP > .70:
                 pairingMatrix[c1-1][c2-1] = 1
             else:
                 pairingMatrix[c1-1][c2-1] = 0
+    print("=====")
                 
     return pairingMatrix
-           
+
+def gateComponents(pairingMatrix,flag):
+    d = {}
+    d["rows"] = []
+    d["cols"] = []
+    rowlength = pairingMatrix.shape[0]
+    collength = pairingMatrix.shape[1]
+    for index,row in enumerate(pairingMatrix):
+        if 1 in row:
+            if flag == "AND":
+                d["rows"].append(index)
+        else:
+            if flag == "XOR":
+                d["rows"].append(index)
+    for index,col in enumerate(pairingMatrix.T):
+        if 1 in col:
+            if flag == "AND":
+                d["cols"].append(index)
+        else:
+            if flag == "XOR":
+                d["cols"].append(index)
+    return(d)

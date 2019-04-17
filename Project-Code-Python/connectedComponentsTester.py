@@ -9,6 +9,7 @@ import image_processing
 import numpy as np
 from RavensObject import RavensObject
 import connectedComponents
+import matplotlib.pyplot as plt
 
 def getNextLine(r):
 	return r.readline().rstrip()
@@ -75,16 +76,79 @@ class TestUM(unittest.TestCase):
 		self.assertEqual(count,5)
 	"""
 	
+	"""
 	def test_D07_AE(self):
 		problem = self.problemDict["Basic Problem D-07"]
-		#bb1 = connectedComponents.computeComponents(problem.figures["A"].visualFilename, True)
-		#bb2 = connectedComponents.computeComponents(problem.figures["E"].visualFilename, True)
-		bb1 = connectedComponents.computeComponents(problem.figures["C"].visualFilename, True)
+
+		# Get bounding boxes of components in A and E
+		bb1 = connectedComponents.computeComponents(problem.figures["A"].visualFilename, True)
 		bb2 = connectedComponents.computeComponents(problem.figures["E"].visualFilename, True)
 		
+		# Figure out which components are in common
 		pairingMatrix = connectedComponents.compareComponents(bb1,bb2)
-		print(pairingMatrix,bb1[2].shape,bb2[2].shape)
+		results = connectedComponents.gateComponents(pairingMatrix,"AND")
+		bb_common = {index:bb1[item+1] for index,item in enumerate(results["rows"])}
 
+		# Compare that to answer choice
+		bb3 = connectedComponents.computeComponents(problem.figures["1"].visualFilename, True)
+		pairingMatrix = connectedComponents.compareComponents(bb_common,bb3)
+		print(pairingMatrix)
+
+		answer = True
+		for row in pairingMatrix:
+			if 1 not in row:
+				answer = False
+		self.assertEqual(answer,True)	
+	"""
+
+	def test_D07_AE(self):
+		problem = self.problemDict["Basic Problem D-07"]
+
+		# Get bounding boxes of components in A and E
+		bb1 = connectedComponents.computeComponents(problem.figures["A"].visualFilename, True)
+		bb2 = connectedComponents.computeComponents(problem.figures["E"].visualFilename, True)
+		
+		# Figure out which components are in common
+		pairingMatrix = connectedComponents.compareComponents(bb1,bb2)
+		flag = "XOR"
+		results = connectedComponents.gateComponents(pairingMatrix,flag)
+		if flag is "AND":
+			bb_common = {index:bb1[item+1] for index,item in enumerate(results["rows"])}
+		if flag is "XOR":
+			bb_common1 = {index:bb1[item+1] for index,item in enumerate(results["rows"])}
+			bb_common2 = {index:bb2[item+1] for index,item in enumerate(results["rows"])}
+
+		# Compare that to answer choice
+		bb3 = connectedComponents.computeComponents(problem.figures["5"].visualFilename, True)
+		if flag is "AND":
+			pairingMatrix = connectedComponents.compareComponents(bb_common,bb3)
+			print(pairingMatrix)
+
+			answer = True
+			for row in pairingMatrix:
+				if 1 not in row:
+					answer = False
+			
+			#self.assertEqual(answer,True)
+
+		if flag is "XOR":
+			pairingMatrix = connectedComponents.compareComponents(bb_common1,bb3)
+			print(pairingMatrix)
+
+			answer1 = True
+			for row in pairingMatrix:
+				if 1 not in row:
+					answer1 = False
+
+			pairingMatrix = connectedComponents.compareComponents(bb_common2,bb3)
+			print(pairingMatrix)
+
+			answer2 = True
+			for row in pairingMatrix:
+				if 1 not in row:
+					answer2 = False
+
+			self.assertEqual(answer1 or answer2,True)
 
 	def tearDown(self):
 		pass
