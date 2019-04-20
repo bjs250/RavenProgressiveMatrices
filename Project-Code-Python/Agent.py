@@ -109,7 +109,43 @@ class Agent:
 				print(sorted_scores)
 				return int(ans)
 
-			print("===AND Test: rows") #D4
+			# Try to do num components row wise
+			numA = connectedComponents.computeComponents(problem.figures["A"].visualFilename,False)
+			numB = connectedComponents.computeComponents(problem.figures["B"].visualFilename,False)
+			numC = connectedComponents.computeComponents(problem.figures["C"].visualFilename,False)
+			
+			filtered_answer_figures = {answer_figure.name:answer_figure for answer_figure in answer_figures}
+
+			if numA == numB and numB == numC:
+				numH = connectedComponents.computeComponents(problem.figures["H"].visualFilename,False)
+			
+				for answer_figure in answer_figures:
+					numAns = connectedComponents.computeComponents(answer_figure.visualFilename,False)
+					if numAns != numH and answer_figure.name in filtered_answer_figures:
+						del filtered_answer_figures[answer_figure.name]
+
+				# Remove duplicates
+				question_figures = [problem.figures[key] for key in problem.figures.keys() if key.isalpha() == True]
+				for answer_figure in answer_figures:
+					for question_figure in question_figures:
+						#print(question_figure.name,answer_figure.name)
+						DP,IP = image_processing.computeIdentity(question_figure.visualFilename,answer_figure.visualFilename,"filename")
+						score = (1.0-DP)+IP
+						if score > 1.90:
+							
+							#print("======",question_figure.name,answer_figure.name)
+							if answer_figure.name in filtered_answer_figures:
+								del filtered_answer_figures[answer_figure.name]
+
+			remaining_answer_figures = list(filtered_answer_figures.values())
+			for a in remaining_answer_figures:
+				print(a.name)
+			if len(remaining_answer_figures) == 1:
+				print("====Eliminated by repeat check after num")
+				return int(remaining_answer_figures[0].name)
+
+
+			print("===Component-wise AND Test: rows") #D4
 			# Row check
 			row_same = {}
 			if connectedComponents.check3(problem.figures["A"].visualFilename,problem.figures["B"].visualFilename,problem.figures["C"].visualFilename,"AND"):
@@ -138,7 +174,7 @@ class Agent:
 
 					row_same[answer_figure.name] = answer
 				
-
+			print("===Component-wise AND Test: cols") #D5
 			# Col check
 			col_same = {}
 			if connectedComponents.check3(problem.figures["A"].visualFilename,problem.figures["D"].visualFilename,problem.figures["G"].visualFilename,"AND"):
@@ -166,7 +202,7 @@ class Agent:
 								answer = False
 
 					col_same[answer_figure.name] = answer
-			
+
 			print("row")
 			for key in row_same.keys():
 				print(key,row_same[key])
@@ -196,14 +232,192 @@ class Agent:
 			print("union",union)
 			print("intersection",intersection)
 
-
 			# If the intersection is one at this point, we are done
 			if len(intersection) == 1:
 				ans = intersection[0]
 				print("Singleton intersection")
 				return int(ans)
 
+			# Remove duplicates from the union?
+			filtered_answer_figures = {answer_figure.name:answer_figure for answer_figure in answer_figures}
+			#print(filtered_answer_figures)
+			question_figures = [problem.figures[key] for key in problem.figures.keys() if key.isalpha() == True]
+			for answer_figure in answer_figures:
+				if answer_figure.name in union:
+					for question_figure in question_figures:
+						#print(question_figure.name,answer_figure.name)
+						DP,IP = image_processing.computeIdentity(question_figure.visualFilename,answer_figure.visualFilename,"filename")
+						score = (1.0-DP)+IP
+						if score > 1.95:
+							print(question_figure.name,answer_figure.name,score)
 
+							#print("======",question_figure.name,answer_figure.name)
+							if answer_figure.name in filtered_answer_figures:
+								del filtered_answer_figures[answer_figure.name]
+				else:
+					del filtered_answer_figures[answer_figure.name]
+
+			
+			remaining_answer_figures = list(filtered_answer_figures.values())
+			print(remaining_answer_figures)
+			if len(remaining_answer_figures) == 1:
+				print("====Eliminated After Row and Col Check for repeats")
+				return int(remaining_answer_figures[0].name)
+
+			# row an col checks must have failed
+			# Diag check
+			print("===Component-wise AND Test: diag")
+			diag_same = {}
+			if connectedComponents.check3(problem.figures["B"].visualFilename,problem.figures["F"].visualFilename,problem.figures["G"].visualFilename,"AND"):
+				print("diag hit")
+
+				# Every answer must have that connected component
+				bb1 = connectedComponents.computeComponents(problem.figures["A"].visualFilename, True)
+				bb2 = connectedComponents.computeComponents(problem.figures["E"].visualFilename, True)
+				
+				# Figure out which components are in common
+				pairingMatrix = connectedComponents.compareComponents(bb1,bb2)
+				flag = "AND"
+				bb_common = connectedComponents.getRelationship(bb1,bb2,pairingMatrix,flag)
+				
+				# Compare that to answer choice
+				answer_figures = [problem.figures[key] for key in problem.figures.keys() if key.isalpha() == False]
+				for answer_figure in answer_figures:
+
+					bb3 = connectedComponents.computeComponents(answer_figure.visualFilename, True)
+					if flag is "AND":
+						pairingMatrix = connectedComponents.compareComponents(bb_common,bb3)
+						
+						answer = True
+						for row in pairingMatrix:
+							if 1 not in row:
+								answer = False
+
+					diag_same[answer_figure.name] = answer
+			
+			print("diag")
+			# Remove duplicates from the diag?
+			union = []
+			for key in diag_same.keys():
+				if diag_same[key]:
+					if key not in union:
+						union.append(key)
+			
+			filtered_answer_figures = {answer_figure.name:answer_figure for answer_figure in answer_figures}
+			#print(filtered_answer_figures)
+			question_figures = [problem.figures[key] for key in problem.figures.keys() if key.isalpha() == True]
+			for answer_figure in answer_figures:
+				if answer_figure.name in union:
+					for question_figure in question_figures:
+						#print(question_figure.name,answer_figure.name)
+						DP,IP = image_processing.computeIdentity(question_figure.visualFilename,answer_figure.visualFilename,"filename")
+						score = (1.0-DP)+IP
+						if score > 1.95:
+							print(question_figure.name,answer_figure.name,score)
+
+							#print("======",question_figure.name,answer_figure.name)
+							if answer_figure.name in filtered_answer_figures:
+								del filtered_answer_figures[answer_figure.name]
+				else:
+					del filtered_answer_figures[answer_figure.name]
+			
+			remaining_answer_figures = list(filtered_answer_figures.values())
+			print(remaining_answer_figures)
+			if len(remaining_answer_figures) == 1:
+				print("====Eliminated After Diag Check for repeats")
+				return int(remaining_answer_figures[0].name)
+
+			# Try using number
+			numB = connectedComponents.computeComponents(problem.figures["B"].visualFilename,False)
+			numF = connectedComponents.computeComponents(problem.figures["F"].visualFilename,False)
+			numG = connectedComponents.computeComponents(problem.figures["G"].visualFilename,False)
+			
+			filtered_answer_figures = {answer_figure.name:answer_figure for answer_figure in answer_figures}
+
+			if numB == numG and numF == numG:
+				numA = connectedComponents.computeComponents(problem.figures["A"].visualFilename,False)
+			
+				print("try numA = numE")
+				for answer_figure in answer_figures:
+					numAns = connectedComponents.computeComponents(answer_figure.visualFilename,False)
+					if numAns != numA and answer_figure.name in filtered_answer_figures:
+						del filtered_answer_figures[answer_figure.name]
+			
+			print([answer_figure.name for answer_figure in answer_figures])
+			answer_figures = list(filtered_answer_figures.values())
+			print([answer_figure.name for answer_figure in answer_figures])
+			if len(answer_figures) == 1:
+				print("====Elimination by number")
+				return int(answer_figures[0].name)
+
+			numB = connectedComponents.computeComponents_white(problem.figures["B"].visualFilename,False)
+			numF = connectedComponents.computeComponents_white(problem.figures["F"].visualFilename,False)
+			numG = connectedComponents.computeComponents_white(problem.figures["G"].visualFilename,False)
+			
+			filtered_answer_figures = {answer_figure.name:answer_figure for answer_figure in answer_figures}
+
+			if numB == numG and numF == numG:
+				numA = connectedComponents.computeComponents_white(problem.figures["A"].visualFilename,False)
+			
+				print("try numA = numE")
+				for answer_figure in answer_figures:
+					numAns = connectedComponents.computeComponents_white(answer_figure.visualFilename,False)
+					if numAns != numA and answer_figure.name in filtered_answer_figures:
+						del filtered_answer_figures[answer_figure.name]
+			
+			print([answer_figure.name for answer_figure in answer_figures])
+			answer_figures = list(filtered_answer_figures.values())
+			print([answer_figure.name for answer_figure in answer_figures])
+			if len(answer_figures) == 1:
+				print("====Elimination by number 2")
+				return int(answer_figures[0].name)
+
+			# Remove duplicates
+			filtered_answer_figures = {answer_figure.name:answer_figure for answer_figure in answer_figures}
+			question_figures = [problem.figures[key] for key in problem.figures.keys() if key.isalpha() == True]
+			for answer_figure in answer_figures:
+				for question_figure in question_figures:
+					#print(question_figure.name,answer_figure.name)
+					DP,IP = image_processing.computeIdentity(question_figure.visualFilename,answer_figure.visualFilename,"filename")
+					score = (1.0-DP)+IP
+					if score > 1.95:
+						print(question_figure.name,answer_figure.name,score)
+
+						#print("======",question_figure.name,answer_figure.name)
+						if answer_figure.name in filtered_answer_figures:
+							del filtered_answer_figures[answer_figure.name]
+
+			answer_figures = list(filtered_answer_figures.values())
+			print([answer_figure.name for answer_figure in answer_figures])
+			if len(answer_figures) == 1:
+				print("====Eliminated by repeat check")
+				return int(answer_figures[0].name)
+
+			"""
+			# Check imagewise AND
+			andAE = image_processing.computeAND(problem.figures["A"].visualFilename,problem.figures["E"].visualFilename,"filename")
+			DPs = {}
+			IPs = {}
+			for key in filtered_answer_figures.keys():
+				answer_figure = filtered_answer_figures[key]
+				a = image_processing.load_image_from_filename(answer_figure.visualFilename)
+				andEAns = image_processing.computeAND(andAE,a,"image")
+				DP,IP = image_processing.computeIdentity(andAE,andEAns,"image")
+				DPs[answer_figure.name] = DP
+				IPs[answer_figure.name] = IP
+			sorted_DP = sorted(DPs.items(), key=operator.itemgetter(1))
+			sorted_DP_dict = {t[0]:t[1] for t in sorted_DP}
+			sorted_IP = sorted(IPs.items(), key=operator.itemgetter(1))
+			sorted_IP_dict = {t[0]:t[1] for t in sorted_IP}
+			scores = self.computeScores(sorted_DP_dict,sorted_IP_dict)
+			sorted_scores = sorted(scores.items(), key=operator.itemgetter(1))
+			ans = sorted_scores[-1][0]
+			print("==========================white flag===================================")
+			print(sorted_scores)
+			return -1
+			return int(ans)
+
+				
 			# andABC = image_processing.checkAND(problem.figures["A"].visualFilename,problem.figures["B"].visualFilename,problem.figures["C"].visualFilename,"check")
 			# andDEF = image_processing.checkAND(problem.figures["D"].visualFilename,problem.figures["E"].visualFilename,problem.figures["F"].visualFilename,"check")
 			# #print(andABC,andDEF)
@@ -214,7 +428,15 @@ class Agent:
 			# 		if andGHAns:
 			# 			print("AND Gate", answer_figure.name)
 			# 			return int(answer_figure.name)
+			"""
 
+			if len(answer_figures) > 0:
+				index = np.random.choice(len(answer_figures),1)[0]
+				ans = answer_figures[index].name
+				return int(ans)
+			else:
+				return -1
+		
 
 		
 			"""
@@ -235,23 +457,6 @@ class Agent:
 			answer_figures = list(filtered_answer_figures.values())
 			if len(answer_figures) == 1:
 				print("====Elimination 1")
-				return int(answer_figures[0].name)
-
-			# Remove answers that don't have the same number of connected components as A and E
-			numA = connectedComponents.computeComponents(problem.figures["A"].visualFilename,False)
-			numE = connectedComponents.computeComponents(problem.figures["E"].visualFilename,False)
-			if numA == numE:
-				print("try numA = numE")
-				filtered_answer_figures = {answer_figure.name:answer_figure for answer_figure in answer_figures}
-				for answer_figure in answer_figures:
-					numAns = connectedComponents.computeComponents(answer_figure.visualFilename,False)
-					if numAns != numA:
-						del filtered_answer_figures[answer_figure.name]
-			
-			print("dict", filtered_answer_figures.keys())
-			answer_figures = list(filtered_answer_figures.values())
-			if len(answer_figures) == 1:
-				print("====Elimination 2")
 				return int(answer_figures[0].name)
 
 			# Remove answers that have similar connected components to A and E

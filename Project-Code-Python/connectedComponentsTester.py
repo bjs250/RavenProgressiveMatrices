@@ -96,9 +96,7 @@ class TestUM(unittest.TestCase):
 		imageFileName = problem.figures["E"].visualFilename
 		count = connectedComponents.computeComponents(imageFileName, False)
 		self.assertEqual(count,5)
-	"""
 	
-	"""
 	def test_D07_AE(self):
 		problem = self.problemDict["Basic Problem D-07"]
 
@@ -172,131 +170,38 @@ class TestUM(unittest.TestCase):
 
 			self.assertEqual(answer1 or answer2,True)
 
-	def test_D10(self):
-		problem = self.problemDict["Basic Problem D-08"]
-		question_figures = [problem.figures[key] for key in problem.figures.keys() if key.isalpha() == True]
-		d = {}
-		for question_figure in question_figures:
-			corners = connectedComponents.computeCorners(question_figure.visualFilename)
-			d[question_figure.name] = corners
-
-		for key in d.keys():
-			print(key,d[key])
-
-		d2 = {key:d[key][3] for key in d}
-		sorted_d2 = sorted(d2.items(), key=operator.itemgetter(1))
-		print(sorted_d2)
-	"""
-
 	def test_D04(self):
-		problem = self.problemDict["Basic Problem D-05"]
+		problem = self.problemDict["Basic Problem D-06"]
 
-		# Get bounding boxes of components in A and B
-		bb1 = connectedComponents.computeComponents(problem.figures["A"].visualFilename, True)
-		bb2 = connectedComponents.computeComponents(problem.figures["B"].visualFilename, True)
-		
-		# Figure out which components are in common
-		pairingMatrix = connectedComponents.compareComponents(bb1,bb2)
-		print("pM", pairingMatrix)
-		flag = "AND"
-		bb_common = connectedComponents.getRelationship(bb1,bb2,pairingMatrix,flag)
-		
-		# Compare that to answer choice
-		bb3 = connectedComponents.computeComponents(problem.figures["C"].visualFilename, True)
-		if flag is "AND":
-			pairingMatrix = connectedComponents.compareComponents(bb_common,bb3)
-			print(pairingMatrix)
+		diag_same = {}
+		if connectedComponents.check3(problem.figures["B"].visualFilename,problem.figures["F"].visualFilename,problem.figures["G"].visualFilename,"AND"):
+			print("diag hit")
 
-			answer = True
-			for row in pairingMatrix:
-				if 1 not in row:
-					answer = False
+			# Every answer must have that connected component
+			bb1 = connectedComponents.computeComponents(problem.figures["A"].visualFilename, True)
+			bb2 = connectedComponents.computeComponents(problem.figures["E"].visualFilename, True)
+			
+			# Figure out which components are in common
+			pairingMatrix = connectedComponents.compareComponents(bb1,bb2)
+			flag = "AND"
+			bb_common = connectedComponents.getRelationship(bb1,bb2,pairingMatrix,flag)
+			
+			# Compare that to answer choice
+			answer_figures = [problem.figures[key] for key in problem.figures.keys() if key.isalpha() == False]
+			for answer_figure in answer_figures:
 
-		# Every answer must have that connected Component
-		bb1 = connectedComponents.computeComponents(problem.figures["G"].visualFilename, True)
-		bb2 = connectedComponents.computeComponents(problem.figures["H"].visualFilename, True)
-		
-		# Figure out which components are in common
-		pairingMatrix = connectedComponents.compareComponents(bb1,bb2)
-		flag = "AND"
-		bb_common = connectedComponents.getRelationship(bb1,bb2,pairingMatrix,flag)
-		
-		# Compare that to answer choice
-		answer_figures = [problem.figures[key] for key in problem.figures.keys() if key.isalpha() == False]
-		a = {}
-		for answer_figure in answer_figures:
+				bb3 = connectedComponents.computeComponents(answer_figure.visualFilename, True)
+				if flag is "AND":
+					pairingMatrix = connectedComponents.compareComponents(bb_common,bb3)
+					
+					answer = True
+					for row in pairingMatrix:
+						if 1 not in row:
+							answer = False
 
-			bb3 = connectedComponents.computeComponents(answer_figure.visualFilename, True)
-			if flag is "AND":
-				pairingMatrix = connectedComponents.compareComponents(bb_common,bb3)
-				
-				answer = True
-				for row in pairingMatrix:
-					if 1 not in row:
-						answer = False
+				diag_same[answer_figure.name] = answer
+		print(diag_same)
 
-			a[answer_figure.name] = answer
-
-		######
-
-		# Get bounding boxes of components in A and D
-		bb1 = connectedComponents.computeComponents(problem.figures["A"].visualFilename, True)
-		bb2 = connectedComponents.computeComponents(problem.figures["D"].visualFilename, True)
-		
-		# Figure out which components are in common
-		pairingMatrix = connectedComponents.compareComponents(bb1,bb2)
-		flag = "AND"
-		bb_common = connectedComponents.getRelationship(bb1,bb2,pairingMatrix,flag)
-		
-		# Compare that to answer choice
-		bb3 = connectedComponents.computeComponents(problem.figures["G"].visualFilename, True)
-		if flag is "AND":
-			pairingMatrix = connectedComponents.compareComponents(bb_common,bb3)
-			print(pairingMatrix)
-
-			answer = True
-			for row in pairingMatrix:
-				if 1 not in row:
-					answer = False
-
-		# Every answer must have that connected Component
-		bb1 = connectedComponents.computeComponents(problem.figures["C"].visualFilename, True)
-		bb2 = connectedComponents.computeComponents(problem.figures["F"].visualFilename, True)
-		
-		# Figure out which components are in common
-		pairingMatrix = connectedComponents.compareComponents(bb1,bb2)
-		flag = "AND"
-		bb_common = connectedComponents.getRelationship(bb1,bb2,pairingMatrix,flag)
-		
-		# Compare that to answer choice
-		answer_figures = [problem.figures[key] for key in problem.figures.keys() if key.isalpha() == False]
-		a2 = {}
-		for answer_figure in answer_figures:
-
-			bb3 = connectedComponents.computeComponents(answer_figure.visualFilename, True)
-			if flag is "AND":
-				pairingMatrix = connectedComponents.compareComponents(bb_common,bb3)
-				
-				answer = True
-				for row in pairingMatrix:
-					if 1 not in row:
-						answer = False
-			a2[answer_figure.name] = answer
-
-		for key in a.keys():
-			print(key,a[key])
-		print("")
-		for key in a2.keys():
-			print(key,a2[key])
-
-		for key in a.keys():
-			if a[key] and a2[key]:
-				print(key)
-
-
-		
-
-		"""
 		if flag is "XOR":
 			pairingMatrix = connectedComponents.compareComponents(bb_common1,bb3)
 			print(pairingMatrix)
@@ -315,9 +220,50 @@ class TestUM(unittest.TestCase):
 					answer2 = False
 
 			#self.assertEqual(answer1 or answer2,True)
-		"""
+	"""
+	
+	"""
+	def test_corners(self):
+		problem = self.problemDict["Basic Problem D-08"]
+		question_figures = [problem.figures[key] for key in problem.figures.keys() if key.isalpha() == True]
 		
+		a = list()
+		c1 = {}
+		for question_figure in question_figures:
+			bb = connectedComponents.computeComponents(question_figure.visualFilename, True)
+			corners = connectedComponents.computeCornersBB(bb)
+			c1[question_figure.name] = corners
+			for key in corners:
+				a.append((question_figure.name,key,corners[key]))
+				#print(question_figure.name,key,corners[key])
+		
+		for thing in a:
+			print(thing)
 
+		question_figures = [problem.figures[key] for key in problem.figures.keys() if key.isalpha() == False]
+		
+		a = list()
+		for question_figure in question_figures:
+			bb = connectedComponents.computeComponents(question_figure.visualFilename, True)
+			corners = connectedComponents.computeCornersBB(bb)
+			c1[question_figure.name] = corners
+			for key in corners:
+				a.append((question_figure.name,key,corners[key]))
+				#print(question_figure.name,key,corners[key])
+		print("")
+		for thing in a:
+			print(thing)
+
+		connectedComponents.computeDifference(c1['A'],c1['B'])
+	"""
+
+	def test_w(self):
+		problem = self.problemDict["Basic Problem D-09"]
+		imageFileName = problem.figures["D"].visualFilename
+		count = connectedComponents.computeComponents_white(imageFileName,False)
+		print(count)
+
+	
 
 
 	def tearDown(self):

@@ -9,7 +9,7 @@ import csv
 
 import numpy as np
 import image_processing
-#import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 
 def computeCorners(imageFilename):
     if type(imageFilename) != type(np.ones((1,1))):
@@ -50,6 +50,57 @@ def computeCorners(imageFilename):
     
     return corners
 
+def computeDifference(c1,c2):
+    score = 0
+    for key in c1.keys():
+        score += np.abs(c1[key] - c2[key])
+    return score
+
+def computeCornersBB(bb):
+
+    bb_corners = {}
+    for key in bb.keys():
+        grid = bb[key]
+        
+        # Apply a threshold to make sure that there are only black and white pixels
+        grid = (grid != 0) * 255
+
+        bb_corners[key] = {1:0,2:0,3:0,4:0,5:0,6:0,7:0,8:0}  
+        for i in range(1,len(grid)-1 ):
+            for j in range(1,len(grid[i])-1 ):
+                if grid[i][j] == 0:
+                    bcount = 0
+                    #cardinal
+                    if grid[i-1][j] == 0:
+                        bcount += 1
+                    if grid[i+1][j] == 0:
+                        bcount += 1
+                    if grid[i][j-1] == 0:
+                        bcount += 1
+                    if grid[i][j+1] == 0:
+                        bcount += 1
+                    #diag
+                    if grid[i-1][j-1] == 0:
+                        bcount += 1
+                    if grid[i+1][j+1] == 0:
+                        bcount += 1
+                    if grid[i-1][j+1] == 0:
+                        bcount += 1
+                    if grid[i+1][j-1] == 0:
+                        bcount += 1
+
+                    bb_corners[key][bcount] +=1
+        total = 0
+        for p in bb_corners[key].keys():
+            total += bb_corners[key][p]
+        for p in bb_corners[key].keys():
+            bb_corners[key][p] = int(bb_corners[key][p]/total*100)
+        
+        plt.imshow(grid)
+        plt.show()
+    
+    return bb_corners
+
 def computeComponents(imageFilename, bounding_box_flag):
     if type(imageFilename) != type(np.ones((1,1))):
         grid = image_processing.load_image_from_filename(imageFilename)
@@ -58,6 +109,79 @@ def computeComponents(imageFilename, bounding_box_flag):
 
     # Apply a threshold to make sure that there are only black and white pixels
     grid = (grid != 0) * 255
+
+    counter = 1
+    d = {} # for holding connected components and associated pixels
+    d[1] = []
+    background = {} # for holding the "mask" of the image with only the white pixels
+    background[1] = np.ones(grid.shape) * 255
+
+    for i in range(len(grid)):
+        for j in range(len(grid[i])):
+            if grid[i][j] == 0:
+                grid[i][j] = counter
+                queue = [[i,j]]
+                while queue:
+                    x,y = queue[-1][0],queue[-1][-1]
+                    if x-1 >= 0 and grid[x-1][y] == 0:
+                        grid[x-1][y] = counter
+                        d[counter].append((x-1,y))
+                        background[counter][x-1][y] = 0
+                        queue.insert(0,[x-1,y])
+                    if x+1 <= len(grid)-1 and grid[x+1][y] == 0:
+                        grid[x+1][y] = counter
+                        d[counter].append((x+1,y))
+                        background[counter][x+1][y] = 0
+                        queue.insert(0,[x+1,y])
+                    if y-1 >= 0 and grid[x][y-1] == 0:
+                        grid[x][y-1] = counter
+                        d[counter].append((x,y-1))
+                        background[counter][x][y-1] = 0
+                        queue.insert(0,[x,y-1])
+                    if y+1 <= len(grid[0])-1 and grid[x][y+1] == 0:
+                        grid[x][y+1] = counter
+                        d[counter].append((x,y+1))
+                        background[counter][x][y+1] = 0
+                        queue.insert(0,[x,y+1])
+                    queue.pop()
+                if len(d[counter]) == 0:
+                    counter -= 1
+                counter += 1
+                d[counter] = []
+                background[counter] = np.ones(grid.shape) * 255
+
+    del d[counter]
+    del background[counter]
+    counter-=1
+
+    #plt.imshow(grid)
+    #plt.show()
+    #print("test",[(key,len(d[key])) for key in d.keys()])
+
+    if bounding_box_flag == True:
+        # Get bounding boxes of components
+        bounding_boxes = {}
+        for component in d.keys():
+            xpos = [t[0] for t in d[component]]
+            xmax = max(xpos)
+            xmin = min(xpos)
+            ypos = [t[1] for t in d[component]]
+            ymax = max(ypos)
+            ymin = min(ypos)
+            #print(component, xmin, ymin, xmax, ymax)
+            bounding_boxes[component] = background[component][xmin:xmax,ymin:ymax]
+        return bounding_boxes
+    else:
+        return counter
+
+def computeComponents_white(imageFilename, bounding_box_flag):
+    if type(imageFilename) != type(np.ones((1,1))):
+        grid = image_processing.load_image_from_filename(imageFilename)
+    else:
+        grid = imageFilename
+
+    # Apply a threshold to make sure that there are only black and white pixels
+    grid = (grid == 0) * 255
 
     counter = 1
     d = {} # for holding connected components and associated pixels
@@ -191,10 +315,10 @@ def check3(inputA,inputB,inputC,flag):
         if flag is "AND":
             pairingMatrix = compareComponents(bb_common,bb3)
             
-            answer = True
+            answer = False
             for row in pairingMatrix:
-                if 1 not in row:
-                    answer = False
+                if 1 in row:
+                    answer = True
     else:
         answer = False
     return answer
